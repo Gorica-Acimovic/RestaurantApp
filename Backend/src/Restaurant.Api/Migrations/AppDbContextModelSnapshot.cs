@@ -103,7 +103,7 @@ namespace Restaurant.Api.Migrations
 
                     b.HasIndex("PinHash")
                         .IsUnique()
-                        .HasFilter("[PinHash] IS NOT NULL");
+                        .HasFilter("[PinHash] is not null and [IsActive]=1");
 
                     b.HasIndex("RegisteredById");
 

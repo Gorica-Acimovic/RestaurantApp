@@ -18,7 +18,7 @@ namespace Restaurant.Api.Data
             {
                 e.HasIndex(u => u.Email).IsUnique();
                 e.Property(u => u.PinHash).HasMaxLength(64);
-                e.HasIndex(u => u.PinHash).IsUnique();
+                e.HasIndex(u => u.PinHash).IsUnique().HasFilter("[PinHash] is not null and [IsActive]=1");
                 e.Property(u => u.Email).HasMaxLength(200);
                 e.Property(u => u.FirstName).HasMaxLength(100);
                 e.Property(u => u.LastName).HasMaxLength(100);
