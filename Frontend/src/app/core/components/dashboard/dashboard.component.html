@@ -1,0 +1,17 @@
+<mat-toolbar color="primary">
+  <span>Restaurant</span>
+    @if (session?.role === 'Admin') {
+    <a mat-button routerLink="/dashboard/managers">Managers</a>
+  }
+  @if (session?.role === 'Manager') {
+  <a mat-button routerLink="/dashboard/waiters">Waiters</a>
+}
+  <span class="spacer"></span>
+  <span>{{ session?.firstName }} {{ session?.lastName }} ({{ session?.role }})</span>
+  <button mat-button (click)="logout()">Log out</button>
+</mat-toolbar>
+
+<div class="content">
+ 
+  <router-outlet></router-outlet>
+</div>
