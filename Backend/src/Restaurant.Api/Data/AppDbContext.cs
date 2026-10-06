@@ -11,6 +11,8 @@ namespace Restaurant.Api.Data
         
             public DbSet<User> Users => Set<User>();
             public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+            public DbSet<RestaurantTable> RestaurantTables => Set<RestaurantTable>();
+            public DbSet<MenuItem> MenuItems => Set<MenuItem>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +36,41 @@ namespace Restaurant.Api.Data
                 e.Property(t => t.Token).HasMaxLength(200);
                 e.HasIndex(t => t.Token).IsUnique();
             });
+
+
+            modelBuilder.Entity<RestaurantTable>(e =>
+            {
+                e.Property(t => t.Status).HasConversion<string>().HasMaxLength(20);
+                e.HasIndex(t => t.Number).IsUnique().HasFilter("[IsActive]=1");
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_RestaurantTables_Number", "[Number] >= 1");
+                    t.HasCheckConstraint("CK_RestaurantTables_Capacity", "[Capacity] >= 1");
+                    t.HasCheckConstraint("CK_RestaurantTables_PositionX", "[PositionX] >= 0 AND [PositionX] <= 100");
+                    t.HasCheckConstraint("CK_RestaurantTables_PositionY", "[PositionY] >= 0 AND [PositionY] <= 100");
+
+                });
+
+            });
+
+            modelBuilder.Entity<MenuItem>(e =>
+            {
+                e.Property(m => m.Name).HasMaxLength(100);
+                e.Property(m => m.Description).HasMaxLength(500);
+                e.Property(m => m.Category).HasConversion<string>().HasMaxLength(20);
+                e.Property(m => m.Price).HasPrecision(10, 2);
+
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_MenuItems_Price", "[Price] >= 0");
+                });
+            });
+               
+
+           
+           
+
+
         }
 
        
