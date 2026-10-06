@@ -1,0 +1,33 @@
+.form-card {
+  margin-bottom: 24px;
+}
+
+.menu-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 16px;
+  padding-top: 16px;
+}
+
+.full-row {
+  grid-column: span 2;
+}
+
+.form-buttons {
+  grid-column: span 2;
+  display: flex;
+  gap: 8px;
+}
+
+.form-error {
+  color: #b00020;
+}
+
+.unavailable-text {
+  color: #b00020;
+  font-weight: 500;
+}
+
+table {
+  width: 100%;
+}

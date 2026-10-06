@@ -1,0 +1,86 @@
+.hall {
+  width: 100%;
+  max-width: 900px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  touch-action: none;
+  user-select: none;
+}
+
+.hall-floor {
+  fill: #f5efe6;
+}
+
+.table circle {
+  stroke: #333;
+  stroke-width: 0.4;
+}
+
+.table circle.available {
+  fill: #4caf50;
+}
+
+.table circle.occupied {
+  fill: #e53935;
+}
+
+.table.draggable {
+  cursor: grab;
+}
+
+.table.draggable:active {
+  cursor: grabbing;
+}
+
+.table-number {
+  font-size: 5px;
+  font-weight: bold;
+  fill: #fff;
+  pointer-events: none;
+}
+
+.table-capacity {
+  font-size: 3px;
+  fill: #333;
+  pointer-events: none;
+}
+
+.hint {
+  color: #555;
+}
+
+.form-error {
+  color: #b00020;
+}
+.table.selected circle {
+  stroke: #1565c0;
+  stroke-width: 1;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

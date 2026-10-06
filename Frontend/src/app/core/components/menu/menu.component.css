@@ -1,0 +1,42 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.menu-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.search-field {
+  flex: 1 1 260px;
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.item.unavailable {
+  opacity: 0.55;
+}
+
+.price {
+  font-weight: 500;
+}
+
+.unavailable-label {
+  color: #b00020;
+  font-weight: 500;
+}
+
+.form-error {
+  color: #b00020;
+}
