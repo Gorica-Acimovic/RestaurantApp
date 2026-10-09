@@ -40,7 +40,7 @@ items: MenuItemDto[] = [];
 constructor(private menuService: MenuService, private formBuilder: FormBuilder, private toastr: ToastrService) {
   this.form = this.formBuilder.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
-    description: ['', [Validators.required, Validators.maxLength(500)]],  
+    description: ['', [ Validators.maxLength(500)]],  
     price: [null, [Validators.required, Validators.min(0)]],
     category: ['Food', [Validators.required]],
   });

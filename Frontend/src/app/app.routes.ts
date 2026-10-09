@@ -9,6 +9,7 @@ import { PinLoginComponent } from './core/components/pin-login/pin-login.compone
 import { roleGuard } from './core/guards/role.guard';
 import { MenuComponent } from './core/components/menu/menu.component';
 import { MenuManagementComponent } from './core/components/menu-management/menu-management.component';
+import { ReservationsComponent } from './core/components/reservations/reservations.component';
 
 export const routes: Routes = [
 
@@ -24,7 +25,8 @@ export const routes: Routes = [
         {path: 'managers', component:ManagersComponent, canActivate: [roleGuard('Admin')] },
         {path: 'waiters', component:WaitersComponent, canActivate: [roleGuard('Manager')] },
         { path: 'tables', component: TablesComponent, canActivate: [roleGuard('Admin', 'Manager', 'Waiter')] },
-        { path: 'menu', component: MenuManagementComponent, canActivate: [roleGuard('Manager')] }
+        { path: 'menu', component: MenuManagementComponent, canActivate: [roleGuard('Manager')] },
+        { path:'reservation', component: ReservationsComponent, canActivate: [roleGuard('Admin', 'Manager', 'Waiter')]},
      ]
     }
 ];
