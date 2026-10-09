@@ -103,7 +103,7 @@ namespace Restaurant.Api.Services
             var tableNumber = await _context.RestaurantTables.AnyAsync(t => t.Number == request.Number && t.Id != id && t.IsActive);
             if (tableNumber)
             {
-                return (false, "Table number is already taken.");
+                return (true, "Table number is already taken.");
             }
 
             table.Number = request.Number;

@@ -47,6 +47,7 @@ namespace Restaurant.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Manager")]
         public async Task<IActionResult> DeleteMenuItem(int id)
         {
             var deleted = await _menuItemService.DeleteMenuItemAsync(id);

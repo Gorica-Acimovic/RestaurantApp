@@ -13,6 +13,7 @@ namespace Restaurant.Api.Data
             public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
             public DbSet<RestaurantTable> RestaurantTables => Set<RestaurantTable>();
             public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+            public DbSet<Reservation> Reservations => Set<Reservation>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -65,7 +66,38 @@ namespace Restaurant.Api.Data
                     t.HasCheckConstraint("CK_MenuItems_Price", "[Price] >= 0");
                 });
             });
-               
+
+
+            modelBuilder.Entity<Reservation>(e =>
+            {
+                e.Property(r => r.CustomerName).IsRequired().HasMaxLength(100);
+                e.Property(r => r.CustomerEmail).HasMaxLength(200);
+                e.Property(r => r.CustomerPhone).HasMaxLength(20);
+                e.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
+                e.Property(r => r.RowVersion).IsRowVersion();
+
+                e.HasOne(r => r.User)
+                    .WithMany()
+                    .HasForeignKey(e =>e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(r => r.Table)
+                    .WithMany()
+                    .HasForeignKey(e => e.TableId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasIndex(r => new {r.TableId, r.StartsAt})
+                    .IsUnique()
+                    .HasFilter("[TableId] IS NOT NULL AND [Status] IN ('Pending', 'Confirmed')");
+
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_Reservations_NumberOfGuests", "[NumberOfGuests] >= 1");
+                    t.HasCheckConstraint("CK_Reservations_StartsAt", "[StartsAt] < [EndsAt]");
+                });
+
+
+            });
 
            
            

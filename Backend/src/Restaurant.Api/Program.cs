@@ -7,6 +7,7 @@ using Restaurant.Api.Services;
 using Restaurant.Api.Interfaces;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using Restaurant.Api.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPinHasher, PinHasherService>();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
+
+builder.Services.Configure<ReservationOptions>(builder.Configuration.GetSection("Reservations"));
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
