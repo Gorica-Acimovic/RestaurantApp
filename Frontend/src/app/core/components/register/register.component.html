@@ -1,0 +1,62 @@
+<div class="register-page">
+  <mat-card class="register-card">
+    <mat-card-header>
+      <mat-card-title>Create account</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>First name</mat-label>
+          <input matInput formControlName="firstName" />
+          @if (form.controls['firstName'].hasError('required')) {
+            <mat-error>First name is required.</mat-error>
+          } @else {
+            <mat-error>First name can have at most 100 characters.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Last name</mat-label>
+          <input matInput formControlName="lastName" />
+          @if (form.controls['lastName'].hasError('required')) {
+            <mat-error>Last name is required.</mat-error>
+          } @else {
+            <mat-error>Last name can have at most 100 characters.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" />
+          @if (form.controls['email'].hasError('required')) {
+            <mat-error>Email is required.</mat-error>
+          } @else {
+            <mat-error>Enter a valid email address.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password" />
+          <mat-hint>At least 6 characters: uppercase, lowercase, number and special character.</mat-hint>
+          @if (form.controls['password'].hasError('required')) {
+            <mat-error>Password is required.</mat-error>
+          } @else {
+            <mat-error>Password does not meet the requirements.</mat-error>
+          }
+        </mat-form-field>
+
+        @if (errorMessage) {
+          <p class="form-error">{{ errorMessage }}</p>
+        }
+
+        <button mat-flat-button type="submit" class="full-width" [disabled]="sending">Create account</button>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <a mat-button routerLink="/login">Already have an account? Sign in</a>
+    </mat-card-actions>
+  </mat-card>
+</div>

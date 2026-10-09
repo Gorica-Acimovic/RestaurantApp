@@ -10,6 +10,7 @@
   }
    @if (session?.role !== 'Guest') {
   <a mat-button routerLink="/dashboard/tables">Hall</a>
+  <a mat-button routerLink="/dashboard/reservations">Reservations</a>
 }
   <span class="spacer"></span>
   <span>{{ session?.firstName }} {{ session?.lastName }} ({{ session?.role }})</span>

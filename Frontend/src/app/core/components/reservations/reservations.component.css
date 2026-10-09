@@ -1,0 +1,30 @@
+table {
+  width: 100%;
+}
+
+.form-error {
+  color: #b00020;
+}
+
+.status-Pending {
+  color: #e65100;
+  font-weight: 500;
+}
+
+.status-Confirmed {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.status-Cancelled {
+  color: #757575;
+}
+
+.status-NoShow {
+  color: #b00020;
+  font-weight: 500;
+}
+
+.status-Completed {
+  color: #1565c0;
+}

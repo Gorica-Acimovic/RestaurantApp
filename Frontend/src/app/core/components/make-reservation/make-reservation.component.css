@@ -1,0 +1,25 @@
+.reserve-page {
+  max-width: 600px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.reserve-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 16px;
+  padding-top: 16px;
+  color: antiquewhite;
+}
+
+.full-row {
+  grid-column: span 2;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.form-error {
+  color: #b00020;
+}
