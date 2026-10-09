@@ -10,5 +10,6 @@ namespace Restaurant.Api.DTOs
         public string Status { get; set; } = string.Empty;
         public double PositionX { get; set; }
         public double PositionY { get; set; }
+        public bool ReservedSoon { get; set; }
     }
 }

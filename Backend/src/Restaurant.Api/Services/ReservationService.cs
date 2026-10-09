@@ -1,9 +1,11 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Restaurant.Api.Data;
 using Restaurant.Api.DTOs;
+using Restaurant.Api.Hubs;
 using Restaurant.Api.Interfaces;
 using Restaurant.Api.Models;
 
@@ -14,12 +16,14 @@ namespace Restaurant.Api.Services
         private readonly AppDbContext _context;
         private readonly ReservationOptions _reservationOptions;
         private readonly TimeProvider _timeProvider;
+        IHubContext<RestaurantHub> _hub;
 
-        public ReservationService(AppDbContext context, IOptions<ReservationOptions> reservationOptions, TimeProvider timeProvider)
+        public ReservationService(AppDbContext context, IOptions<ReservationOptions> reservationOptions, TimeProvider timeProvider, IHubContext<RestaurantHub> hub)
         {
             _context = context;
             _reservationOptions = reservationOptions.Value;
             _timeProvider = timeProvider;
+            _hub = hub;
         }
 
         public async Task<(ReservationDto? Reservation, string? Error, int StatusCode)> ChangeStatusAsync(int id, ChangeReservationStatusRequest request, int userId, bool isStaff)
@@ -75,6 +79,7 @@ namespace Restaurant.Api.Services
             {
                 return (null, "Reservation was changed by someone else. Reload and try again.", 409);
             }
+            await _hub.Clients.All.SendAsync("ReservationsChanged");
 
             var dto = new ReservationDto
             {
@@ -157,6 +162,7 @@ namespace Restaurant.Api.Services
                     _context.Reservations.Add(reservation);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
+                    await _hub.Clients.All.SendAsync("ReservationsChanged");
 
                     var dto = new ReservationDto
                     {

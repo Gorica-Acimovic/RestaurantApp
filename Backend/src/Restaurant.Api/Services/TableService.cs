@@ -3,17 +3,26 @@ using Restaurant.Api.Data;
 using Restaurant.Api.DTOs;
 using Restaurant.Api.Interfaces;
 using Restaurant.Api.Models;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
+using Restaurant.Api.Hubs;
 
 namespace Restaurant.Api.Services
 {
     public class TableService : ITableService
     {
-      
         private readonly AppDbContext _context;
+        private readonly ReservationOptions _reservationOptions;
+        private readonly TimeProvider _timeProvider;
+        private readonly IHubContext<RestaurantHub> _hub;
+            
 
-        public TableService( AppDbContext context)
+        public TableService(AppDbContext context, IOptions<ReservationOptions> reservationOptions, TimeProvider timeProvider, IHubContext<RestaurantHub> hub)
         {
             _context = context;
+            _reservationOptions = reservationOptions.Value;
+            _timeProvider = timeProvider;
+            _hub = hub;
         }
         public async Task<(TableDto? Table, string? Error)> CreateTableAsync(SaveTableRequest request)
         {
@@ -35,6 +44,7 @@ namespace Restaurant.Api.Services
 
             _context.RestaurantTables.Add(table);
             await _context.SaveChangesAsync();
+            await _hub.Clients.All.SendAsync("TablesChanged");
 
             var tableDto = new TableDto
             {
@@ -58,11 +68,15 @@ namespace Restaurant.Api.Services
             }
             table.IsActive = false;
             await _context.SaveChangesAsync();
+            await _hub.Clients.All.SendAsync("TablesChanged");
             return true;
         }
 
         public async Task<List<TableDto>> GetAllTablesAsync()
         {
+            var now = _timeProvider.GetLocalNow().DateTime;
+            var limit = now.AddMinutes(_reservationOptions.ReservedSoonMinutes);
+
             var tables = await _context.RestaurantTables
                 .Where(t =>t.IsActive)
                 .OrderBy(t=>t.Number)
@@ -73,7 +87,12 @@ namespace Restaurant.Api.Services
                     Capacity = t.Capacity,
                     Status = t.Status.ToString(),
                     PositionX = t.PositionX,
-                    PositionY = t.PositionY
+                    PositionY = t.PositionY,
+                    ReservedSoon = _context.Reservations.Any(r =>
+                        r.TableId == t.Id &&
+                        r.Status == ReservationStatus.Confirmed &&
+                        r.StartsAt >= now &&
+                        r.StartsAt <= limit)
                 })
                 .ToListAsync();
 
@@ -89,6 +108,21 @@ namespace Restaurant.Api.Services
             table.PositionX = request.PositionX;
             table.PositionY = request.PositionY;
             await _context.SaveChangesAsync();
+            await _hub.Clients.All.SendAsync("TablesChanged");
+            return true;
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, UpdateTableStatusRequest request)
+        {
+            var table = await _context.RestaurantTables.FirstOrDefaultAsync(t => t.Id == id && t.IsActive);
+            if (table == null)
+            {
+                return false;
+            }
+
+            table.Status = request.Status;
+            await _context.SaveChangesAsync();
+            await _hub.Clients.All.SendAsync("TablesChanged");
             return true;
         }
 
@@ -111,6 +145,7 @@ namespace Restaurant.Api.Services
             table.PositionX = request.PositionX;
             table.PositionY = request.PositionY;
             await _context.SaveChangesAsync();
+            await _hub.Clients.All.SendAsync("TablesChanged");
             return (true, null);
 
         }

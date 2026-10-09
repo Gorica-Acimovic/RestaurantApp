@@ -9,5 +9,6 @@ namespace Restaurant.Api.Interfaces
         Task<(bool Found, string? Error)> UpdateTableAsync(int id, SaveTableRequest request);
         Task<bool> UpdatePositionOfTableAsync(int id, UpdateTablePositionRequest request);
         Task<bool> DeleteTableAsync(int id);
+        Task<bool> UpdateStatusAsync(int id, UpdateTableStatusRequest request);
     }
 }
