@@ -2,11 +2,32 @@
 
 @if (isAdmin) {
   <p class="hint">Click a table to select it, drag it to change its position.</p>
+} @else {
+  <p class="hint">Click a table to change its status.</p>
 }
 
 @if (errorMessage) {
   <p class="form-error">{{ errorMessage }}</p>
 }
+
+<div class="legend">
+  <span><i class="dot available"></i> Available</span>
+  <span><i class="dot reserved"></i> Reserved soon</span>
+  <span><i class="dot occupied"></i> Occupied</span>
+</div>
+
+@if (selectedTable) {
+  <div class="status-bar">
+    <span>Table {{ selectedTable.number }} ({{ selectedTable.capacity }} seats):</span>
+    <strong>{{ statusLabel(selectedTable) }}</strong>
+    @if (selectedTable.status === 'Available') {
+      <button mat-flat-button type="button" (click)="setStatus('Occupied')">Set occupied</button>
+    } @else {
+      <button mat-flat-button type="button" (click)="setStatus('Available')">Set available</button>
+    }
+  </div>
+}
+
 
 <div class="layout">
   <svg
@@ -34,7 +55,12 @@
         [attr.transform]="'translate(' + table.positionX * xScale + ',' + table.positionY + ')'"
         (pointerdown)="startDrag(table)"
       >
-        <circle r="6" [class.available]="table.status === 'Available'" [class.occupied]="table.status === 'Occupied'" />
+      <circle
+        r="6"
+        [class.available]="table.status === 'Available' && !table.reservedSoon"
+        [class.reserved]="table.status === 'Available' && table.reservedSoon"
+        [class.occupied]="table.status === 'Occupied'"
+      />
         <text y="1.8" text-anchor="middle" class="table-number">{{ table.number }}</text>
         <text y="10" text-anchor="middle" class="table-capacity">{{ table.capacity }} seats</text>
       </g>

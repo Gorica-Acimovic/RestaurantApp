@@ -10,5 +10,7 @@ namespace Restaurant.Api.DTOs
         public decimal Price { get; set; }
         public MenuCategory Category { get; set; }
         public bool IsAvailable { get; set; } = true;
+        public int SubcategoryId { get; set; }
+        public string SubcategoryName { get; set; } = string.Empty;
     }
 }

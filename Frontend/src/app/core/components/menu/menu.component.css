@@ -40,3 +40,11 @@
 .form-error {
   color: #b00020;
 }
+.category-title {
+  margin: 32px 0 8px;
+}
+
+.group-title {
+  margin: 20px 0 8px;
+  color: #555;
+}

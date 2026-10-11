@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { MenuItemDto, SaveMenuItemRequest } from '../models/menu.models';
+import { MenuItemDto, MenuSubcategoryDto, SaveMenuItemRequest } from '../models/menu.models';
 import { API_URL } from '../api-config';
 
 @Injectable({
@@ -41,4 +41,7 @@ export class MenuService {
     return this.http.delete<void>(`${API_URL}/MenuItems/${id}`);
   }
 
+  getSubcategories(): Observable<MenuSubcategoryDto[]> {
+  return this.http.get<MenuSubcategoryDto[]>(`${API_URL}/MenuSubcategories`);
+}
 }

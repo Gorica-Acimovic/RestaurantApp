@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MenuService } from '../../services/menu.service';
 import { FormBuilder, FormGroup, FormGroupDirective, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { MenuItemDto } from '../../models/menu.models';
+import { MenuItemDto, MenuSubcategoryDto } from '../../models/menu.models';
 import { CURRENCY } from '../../currency';
 import { DecimalPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -30,27 +30,33 @@ import { MatTableModule } from '@angular/material/table';
 })
 export class MenuManagementComponent  implements OnInit {
 items: MenuItemDto[] = [];
-  displayedColumns = ['name', 'category', 'price', 'status', 'actions'];
   editingItem: MenuItemDto | null = null;
   errorMessage = '';
   saveError = '';
   form: FormGroup;
   readonly currency = CURRENCY;
+  subcategories: MenuSubcategoryDto[] = [];
+  displayedColumns = ['name', 'category', 'subcategory', 'price', 'status', 'actions'];
 
 constructor(private menuService: MenuService, private formBuilder: FormBuilder, private toastr: ToastrService) {
   this.form = this.formBuilder.group({
-    name: ['', [Validators.required, Validators.maxLength(100)]],
-    description: ['', [ Validators.maxLength(500)]],  
-    price: [null, [Validators.required, Validators.min(0)]],
-    category: ['Food', [Validators.required]],
-  });
+  name: ['', [Validators.required, Validators.maxLength(100)]],
+  description: ['', [Validators.maxLength(500)]],
+  price: [null, [Validators.required, Validators.min(0)]],
+  category: ['Food'],
+  subcategoryId: [null, [Validators.required]]
+});
 }
 
 
 
   ngOnInit(): void {
-    this.loadMenuItems();
-  }
+  this.loadMenuItems();
+  this.menuService.getSubcategories().subscribe({
+    next: (data) => (this.subcategories = data),
+    error: () => (this.errorMessage = 'Failed to load subcategories.')
+  });
+}
 
   loadMenuItems(): void {
   this.menuService.getMenuItems('', '').subscribe({
@@ -67,7 +73,8 @@ constructor(private menuService: MenuService, private formBuilder: FormBuilder, 
     }
 
     this.saveError = '';
-    const request = this.form.getRawValue();
+    const { name, description, price, subcategoryId } = this.form.getRawValue();
+const request = { name, description, price, subcategoryId };
 
     if (this.editingItem) {
       this.menuService.updateMenuItem(this.editingItem.id, request).subscribe({
@@ -99,7 +106,8 @@ constructor(private menuService: MenuService, private formBuilder: FormBuilder, 
       name: item.name,
       description: item.description,
       price: item.price,
-      category: item.category
+      category: item.category,
+      subcategoryId: item.subcategoryId
     });
   }
 
@@ -146,8 +154,15 @@ constructor(private menuService: MenuService, private formBuilder: FormBuilder, 
   }
 
   private emptyForm() {
-    return { name: '', description: '', price: null, category: 'Food' };
-  }
+  return { name: '', description: '', price: null, category: 'Food', subcategoryId: null };  }
+
+  filteredSubcategories(): MenuSubcategoryDto[] {
+  return this.subcategories.filter(s => s.category === this.form.controls['category'].value);
+}
+
+onCategoryChange(): void {
+  this.form.controls['subcategoryId'].setValue(null);
+}
 }
 
 

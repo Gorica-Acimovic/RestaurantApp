@@ -30,12 +30,18 @@
     <p>No items found.</p>
   }
 
+ @for (group of groups; track group.subcategoryId; let i = $index) {
+  @if (i === 0 || groups[i - 1].category !== group.category) {
+    <h2 class="category-title">{{ group.category === 'Food' ? 'Food' : 'Drinks' }}</h2>
+  }
+
+  <h3 class="group-title">{{ group.name }}</h3>
+
   <div class="items">
-    @for (item of items; track item.id) {
+    @for (item of group.items; track item.id) {
       <mat-card class="item" [class.unavailable]="!item.isAvailable">
         <mat-card-header>
           <mat-card-title>{{ item.name }}</mat-card-title>
-          <mat-card-subtitle>{{ item.category }}</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content>
@@ -49,4 +55,5 @@
       </mat-card>
     }
   </div>
+}
 </div>

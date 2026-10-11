@@ -14,6 +14,7 @@ namespace Restaurant.Api.Data
             public DbSet<RestaurantTable> RestaurantTables => Set<RestaurantTable>();
             public DbSet<MenuItem> MenuItems => Set<MenuItem>();
             public DbSet<Reservation> Reservations => Set<Reservation>();
+        public DbSet<MenuSubcategory> MenuSubcategories => Set<MenuSubcategory>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -58,8 +59,11 @@ namespace Restaurant.Api.Data
             {
                 e.Property(m => m.Name).HasMaxLength(100);
                 e.Property(m => m.Description).HasMaxLength(500);
-                e.Property(m => m.Category).HasConversion<string>().HasMaxLength(20);
                 e.Property(m => m.Price).HasPrecision(10, 2);
+                e.HasOne(m => m.Subcategory)
+                    .WithMany()
+                    .HasForeignKey(m => m.SubcategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 e.ToTable(t =>
                 {
@@ -99,8 +103,27 @@ namespace Restaurant.Api.Data
 
             });
 
-           
-           
+            modelBuilder.Entity<MenuSubcategory>(e =>
+            {
+                e.Property(s => s.Name).IsRequired().HasMaxLength(50);
+                e.Property(s => s.Category).HasConversion<string>().HasMaxLength(20);
+                e.HasIndex(s => new { s.Category, s.Name }).IsUnique();
+
+                e.HasData(
+                    new MenuSubcategory { Id = 1, Name = "Appetizers", Category = MenuCategory.Food, SortOrder = 1 },
+                    new MenuSubcategory { Id = 2, Name = "Salads", Category = MenuCategory.Food, SortOrder = 2 },
+                    new MenuSubcategory { Id = 3, Name = "Main courses", Category = MenuCategory.Food, SortOrder = 3 },
+                    new MenuSubcategory { Id = 4, Name = "Desserts", Category = MenuCategory.Food, SortOrder = 4 },
+                    new MenuSubcategory { Id = 5, Name = "Coffee & tea", Category = MenuCategory.Drink, SortOrder = 1 },
+                    new MenuSubcategory { Id = 6, Name = "Soft drinks", Category = MenuCategory.Drink, SortOrder = 2 },
+                    new MenuSubcategory { Id = 7, Name = "Beer", Category = MenuCategory.Drink, SortOrder = 3 },
+                    new MenuSubcategory { Id = 8, Name = "Wine", Category = MenuCategory.Drink, SortOrder = 4 },
+                    new MenuSubcategory { Id = 9, Name = "Cocktails", Category = MenuCategory.Drink, SortOrder = 5 },
+                    new MenuSubcategory { Id = 10, Name = "Spirits", Category = MenuCategory.Drink, SortOrder = 6 }
+                );
+            });
+
+
 
 
         }

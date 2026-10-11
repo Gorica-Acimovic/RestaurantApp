@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy} from '@angular/core';
 import { ReservationDto, ReservationStatus } from '../../models/reservation.models';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ReservationService } from '../../services/reservation.service';
@@ -8,6 +8,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
+import { merge, Subscription } from 'rxjs';
+import { RealtimeService } from '../../services/realtime.service';
 
 @Component({
   selector: 'app-reservations',
@@ -23,7 +25,7 @@ import { MatTableModule } from '@angular/material/table';
   templateUrl: './reservations.component.html',
   styleUrl: './reservations.component.css'
 })
-export class ReservationsComponent implements OnInit{
+export class ReservationsComponent implements OnInit,OnDestroy{
 
  reservations: ReservationDto[] = [];
   displayedColumns = ['time', 'customer', 'guests', 'table', 'status', 'actions'];
@@ -31,15 +33,25 @@ export class ReservationsComponent implements OnInit{
   errorMessage = '';
 
   dateControl = new FormControl(this.today(), { nonNullable: true });
+  private refreshSubscription: Subscription | null = null;
 
-  constructor(private reservationService: ReservationService, private toastr: ToastrService) { }
+  constructor(private reservationService: ReservationService, private toastr: ToastrService, private realtimeService: RealtimeService) { }
 
+  
 
-
-  ngOnInit(): void {
+   ngOnInit(): void {
      this.loadReservations();
     this.dateControl.valueChanges.subscribe(() => this.loadReservations());
+
+        this.refreshSubscription = merge(
+      this.realtimeService.reservationsChanged$,
+      this.realtimeService.reconnected$
+    ).subscribe(() => this.loadReservations());
   }
+
+  ngOnDestroy(): void {
+  this.refreshSubscription?.unsubscribe();
+}
 
    loadReservations(): void {
     this.errorMessage = '';

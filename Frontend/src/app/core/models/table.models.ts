@@ -7,6 +7,7 @@ export interface TableDto {
     status:TableStatus;
     positionX: number;
     positionY: number;
+    reservedSoon:boolean;
    
 }
 

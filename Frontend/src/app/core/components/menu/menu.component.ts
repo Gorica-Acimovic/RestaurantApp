@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MenuItemDto } from '../../models/menu.models';
+import { MenuGroup, MenuItemDto } from '../../models/menu.models';
 import { CURRENCY } from '../../currency';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
@@ -36,6 +36,7 @@ export class MenuComponent  implements OnInit {
   loaded = false;
   errorMessage = '';
   readonly currency = CURRENCY;
+  groups: MenuGroup[]=[];
 
   searchControl = new FormControl('', { nonNullable: true });
   categoryControl = new FormControl('', { nonNullable: true });
@@ -61,10 +62,28 @@ export class MenuComponent  implements OnInit {
       .subscribe({
         next: (data) => {
           this.items = data;
+          this.groups = this.buildGroups(data);
           this.loaded = true;
         },
         error: () => (this.errorMessage = 'Could not load the menu.')
       });
   }
+
+  private buildGroups(items: MenuItemDto[]): MenuGroup[] {
+  const groups: MenuGroup[] = [];
+
+  for (const item of items) {
+    let group = groups.find(g => g.subcategoryId === item.subcategoryId);
+
+    if (!group) {
+      group = { subcategoryId: item.subcategoryId, name: item.subcategoryName, category: item.category, items: [] };
+      groups.push(group);
+    }
+
+    group.items.push(item);
+  }
+
+  return groups;
+}
 
 }

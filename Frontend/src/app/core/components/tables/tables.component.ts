@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild , OnDestroy} from '@angular/core';
 import { FormBuilder, FormGroup, FormGroupDirective, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -7,7 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { ToastrService } from 'ngx-toastr';
 import { TableService } from '../../services/table.service';
 import { AuthService } from '../../services/auth.service';
-import { TableDto } from '../../models/table.models';
+import { TableDto,TableStatus } from '../../models/table.models';
+import { interval, merge, Subscription } from 'rxjs';
+import { RealtimeService } from '../../services/realtime.service';
 
 const MAP_WIDTH = 160;
 const MAP_HEIGHT = 100;
@@ -25,7 +27,7 @@ const MAP_HEIGHT = 100;
   templateUrl: './tables.component.html',
   styleUrl: './tables.component.css'
 })
-export class TablesComponent implements OnInit {
+export class TablesComponent implements OnInit, OnDestroy {
   @ViewChild('mapSvg') mapSvg!: ElementRef<SVGSVGElement>;
 
   tables: TableDto[] = [];
@@ -44,11 +46,14 @@ export class TablesComponent implements OnInit {
   private draggingTable: TableDto | null = null;
   private dragMoved = false;
 
+  private refreshSubscription: Subscription | null = null;
+
   constructor(
     private tableService: TableService,
     private authService: AuthService,
     private toastr: ToastrService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private realtimeService: RealtimeService,
   ) {
     this.isAdmin = this.authService.getRole() === 'Admin';
 
@@ -63,16 +68,42 @@ export class TablesComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+   ngOnInit(): void {
     this.loadTables();
+
+    this.refreshSubscription = merge(
+    this.realtimeService.tablesChanged$,
+    this.realtimeService.reservationsChanged$,
+    this.realtimeService.reconnected$,
+    interval(30000)
+  ).subscribe(() => this.refresh());
   }
 
-  loadTables(): void {
-    this.tableService.getAllTables().subscribe({
-      next: (data) => (this.tables = data),
-      error: () => (this.errorMessage = 'Could not load tables.')
-    });
+  ngOnDestroy(): void {
+    this.refreshSubscription?.unsubscribe();
   }
+
+ 
+private refresh(): void {
+  if (this.draggingTable) {
+    return;
+  }
+  this.loadTables();
+}
+
+ loadTables(): void {
+  this.tableService.getAllTables().subscribe({
+    next: (data) => {
+      this.tables = data;
+
+      if (this.selectedTable) {
+        const id = this.selectedTable.id;
+        this.selectedTable = data.find(t => t.id === id) ?? null;
+      }
+    },
+    error: () => (this.errorMessage = 'Could not load tables.')
+  });
+}
 
   addTable(directive: FormGroupDirective): void {
     if (this.addForm.invalid) {
@@ -106,6 +137,26 @@ export class TablesComponent implements OnInit {
   clearSelection(): void {
     this.selectedTable = null;
   }
+
+  setStatus(status: TableStatus): void {
+  if (!this.selectedTable) {
+    return;
+  }
+
+  this.tableService.updateTableStatus(this.selectedTable.id, status).subscribe({
+    next: () => this.loadTables(),
+    error: (err) => {
+      this.toastr.error(err.error?.message ?? 'Something went wrong. Please try again.');
+    }
+  });
+}
+
+statusLabel(table: TableDto): string {
+  if (table.status === 'Occupied') {
+    return 'Occupied';
+  }
+  return table.reservedSoon ? 'Reserved soon' : 'Available';
+}
 
   saveTable(): void {
     if (!this.selectedTable) {
@@ -164,14 +215,15 @@ export class TablesComponent implements OnInit {
   }
 
   startDrag(table: TableDto): void {
-    if (!this.isAdmin) {
-      return;
-    }
+  this.selectTable(table);
 
-    this.selectTable(table);
-    this.draggingTable = table;
-    this.dragMoved = false;
+  if (!this.isAdmin) {
+    return;
   }
+
+  this.draggingTable = table;
+  this.dragMoved = false;
+}
 
   onPointerMove(event: PointerEvent): void {
     if (!this.draggingTable) {

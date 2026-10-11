@@ -30,8 +30,10 @@ namespace Restaurant.Api.Controllers
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> CreateMenuItem(SaveMenuItemRequest request)
         {
-            var menuItem= await _menuItemService.CreateMenuItemAsync(request);
-           
+            var (menuItem, error) = await _menuItemService.CreateMenuItemAsync(request);
+            if (error is not null)
+                return BadRequest(new { message = error });
+
             return Ok(menuItem);
         }
 
@@ -39,10 +41,13 @@ namespace Restaurant.Api.Controllers
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> UpdateMenuItem(int id, SaveMenuItemRequest request)
         {
-            var menuItem  = await _menuItemService.UpdateMenuItemAsync(id, request);
-            if (!menuItem)
+            var (found, error) = await _menuItemService.UpdateMenuItemAsync(id, request);
+            if (!found)
                 return NotFound(new { message = "Menu item not found." });
-            
+
+            if (error is not null)
+                return BadRequest(new { message = error });
+
             return NoContent();
         }
 

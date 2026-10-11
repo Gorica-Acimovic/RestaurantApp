@@ -44,7 +44,7 @@ form: FormGroup;
     this.errorMessage = '';
 
     this.authService.loginWithPin(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: () => this.router.navigate(['/dashboard/tables']),
       error: (err) => {
         this.errorMessage = err.error?.message ?? 'Login failed. Please try again.';
       }

@@ -15,29 +15,37 @@ namespace Restaurant.Api.Services
             _context = context;
         }
 
-        public async Task<MenuItemDto> CreateMenuItemAsync(SaveMenuItemRequest request)
+        public async Task<(MenuItemDto? Item, string? Error)> CreateMenuItemAsync(SaveMenuItemRequest request)
         {
+            var subcategory = await _context.MenuSubcategories.FirstOrDefaultAsync(s => s.Id == request.SubcategoryId);
+            if (subcategory == null)
+            {
+                return (null, "Subcategory not found.");
+            }
+
             var menuItem = new MenuItem
             {
                 Name = request.Name,
                 Description = request.Description,
                 Price = request.Price,
-                Category = request.Category,
+                SubcategoryId = subcategory.Id,
             };
             _context.MenuItems.Add(menuItem);
             await _context.SaveChangesAsync();
 
-            var menuItemDto =  new MenuItemDto
+            var menuItemDto = new MenuItemDto
             {
                 Id = menuItem.Id,
                 Name = menuItem.Name,
                 Description = menuItem.Description,
                 Price = menuItem.Price,
-                Category = menuItem.Category,
+                Category = subcategory.Category,
+                SubcategoryId = subcategory.Id,
+                SubcategoryName = subcategory.Name,
                 IsAvailable = menuItem.IsAvailable
             };
 
-            return menuItemDto;
+            return (menuItemDto, null);
         }
 
         public async Task<bool> DeleteMenuItemAsync(int id)
@@ -65,11 +73,12 @@ namespace Restaurant.Api.Services
 
             if (category.HasValue)
             {
-                query = query.Where(m => m.Category == category.Value);
+                query = query.Where(m => m.Subcategory.Category == category.Value);
             }
 
             var items = await query
-                .OrderBy(m => m.Category)
+                .OrderBy(m => m.Subcategory.Category == MenuCategory.Drink)
+                .ThenBy(m => m.Subcategory.SortOrder)
                 .ThenBy(m => m.Name)
                 .Select(m => new MenuItemDto
                 {
@@ -77,11 +86,12 @@ namespace Restaurant.Api.Services
                     Name = m.Name,
                     Description = m.Description,
                     Price = m.Price,
-                    Category = m.Category,
+                    Category = m.Subcategory.Category,
+                    SubcategoryId = m.SubcategoryId,
+                    SubcategoryName = m.Subcategory.Name,
                     IsAvailable = m.IsAvailable
                 })
                 .ToListAsync();
-
             return items;
 
         }
@@ -99,21 +109,42 @@ namespace Restaurant.Api.Services
             return true;
         }
 
-        public async Task<bool> UpdateMenuItemAsync(int id, SaveMenuItemRequest request)
+        public async Task<(bool Found, string? Error)> UpdateMenuItemAsync(int id, SaveMenuItemRequest request)
         {
             var menuItem = await _context.MenuItems.FirstOrDefaultAsync(m => m.Id == id && m.IsActive);
             if (menuItem == null)
             {
-                return false;
+                return (false, "Menu item not found.");
+            }
+
+            var subcategoryExists = await _context.MenuSubcategories.AnyAsync(s => s.Id == request.SubcategoryId);
+            if (!subcategoryExists)
+            {
+                return (true, "Subcategory not found.");
             }
 
             menuItem.Name = request.Name;
             menuItem.Description = request.Description;
             menuItem.Price = request.Price;
-            menuItem.Category = request.Category;
+            menuItem.SubcategoryId = request.SubcategoryId;
 
             await _context.SaveChangesAsync();
-            return true;
+            return (true, null);
+        }
+
+        public async Task<List<MenuSubcategoryDto>> GetSubcategoriesAsync()
+        {
+            return await _context.MenuSubcategories
+                .OrderBy(s => s.Category == MenuCategory.Drink)
+                .ThenBy(s => s.SortOrder)
+                .Select(s => new MenuSubcategoryDto
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Category = s.Category,
+                    SortOrder = s.SortOrder
+                })
+                .ToListAsync();
         }
     }
 }

@@ -30,11 +30,6 @@ namespace Restaurant.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -55,11 +50,117 @@ namespace Restaurant.Api.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<int>("SubcategoryId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("SubcategoryId");
 
                     b.ToTable("MenuItems", t =>
                         {
                             t.HasCheckConstraint("CK_MenuItems_Price", "[Price] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Restaurant.Api.Models.MenuSubcategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category", "Name")
+                        .IsUnique();
+
+                    b.ToTable("MenuSubcategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = "Food",
+                            Name = "Appetizers",
+                            SortOrder = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = "Food",
+                            Name = "Salads",
+                            SortOrder = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = "Food",
+                            Name = "Main courses",
+                            SortOrder = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = "Food",
+                            Name = "Desserts",
+                            SortOrder = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = "Drink",
+                            Name = "Coffee & tea",
+                            SortOrder = 1
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Category = "Drink",
+                            Name = "Soft drinks",
+                            SortOrder = 2
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Category = "Drink",
+                            Name = "Beer",
+                            SortOrder = 3
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Category = "Drink",
+                            Name = "Wine",
+                            SortOrder = 4
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Category = "Drink",
+                            Name = "Cocktails",
+                            SortOrder = 5
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Category = "Drink",
+                            Name = "Spirits",
+                            SortOrder = 6
                         });
                 });
 
@@ -258,6 +359,17 @@ namespace Restaurant.Api.Migrations
                     b.HasIndex("RegisteredById");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Restaurant.Api.Models.MenuItem", b =>
+                {
+                    b.HasOne("Restaurant.Api.Models.MenuSubcategory", "Subcategory")
+                        .WithMany()
+                        .HasForeignKey("SubcategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Subcategory");
                 });
 
             modelBuilder.Entity("Restaurant.Api.Models.RefreshToken", b =>

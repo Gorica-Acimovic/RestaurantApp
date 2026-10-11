@@ -15,7 +15,7 @@ namespace Restaurant.Api.DTOs
         [Range(0.01, 99999999.99, ErrorMessage = "Price must be greater than 0.")]
         public decimal Price { get; set; }
 
-        [EnumDataType(typeof(MenuCategory), ErrorMessage = "Category must be Food or Drink.")]
-        public MenuCategory Category { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Subcategory is required.")]
+        public int SubcategoryId { get; set; }
     }
 }
