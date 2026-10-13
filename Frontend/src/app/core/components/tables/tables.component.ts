@@ -10,6 +10,7 @@ import { AuthService } from '../../services/auth.service';
 import { TableDto,TableStatus } from '../../models/table.models';
 import { interval, merge, Subscription } from 'rxjs';
 import { RealtimeService } from '../../services/realtime.service';
+import { Router } from '@angular/router';
 
 const MAP_WIDTH = 160;
 const MAP_HEIGHT = 100;
@@ -54,6 +55,7 @@ export class TablesComponent implements OnInit, OnDestroy {
     private toastr: ToastrService,
     private formBuilder: FormBuilder,
     private realtimeService: RealtimeService,
+    private router:Router
   ) {
     this.isAdmin = this.authService.getRole() === 'Admin';
 
@@ -281,4 +283,12 @@ statusLabel(table: TableDto): string {
     const rounded = Math.round(value * 10) / 10;
     return Math.min(100, Math.max(0, rounded));
   }
+
+  openOrder(): void {
+  if (!this.selectedTable) {
+    return;
+  }
+
+  this.router.navigate(['/dashboard/orders', this.selectedTable.id]);
+}
 }

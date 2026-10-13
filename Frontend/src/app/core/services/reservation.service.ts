@@ -25,6 +25,10 @@ export class ReservationService {
     return this.http.get<ReservationDto[]>(`${API_URL}/Reservations`, {params});
   }
 
+    getMyReservations(): Observable<ReservationDto[]> {
+    return this.http.get<ReservationDto[]>(`${API_URL}/Reservations/mine`);
+  }
+
   changeStatus(id:number, request: ChangeReservationStatusRequest):Observable<ReservationDto>{
     return this.http.put<ReservationDto>(`${API_URL}/Reservations/${id}/status`,request)
   }

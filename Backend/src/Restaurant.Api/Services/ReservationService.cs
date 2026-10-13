@@ -221,5 +221,28 @@ namespace Restaurant.Api.Services
                 }).ToListAsync();
 
         }
+
+        public async Task<List<ReservationDto>> GetMyReservationsAsync(int userId)
+        {
+            return await _context.Reservations
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.StartsAt)
+                .Select(r => new ReservationDto
+                {
+                    Id = r.Id,
+                    CustomerName = r.CustomerName,
+                    CustomerEmail = r.CustomerEmail,
+                    CustomerPhone = r.CustomerPhone,
+                    StartsAt = r.StartsAt,
+                    EndsAt = r.EndsAt,
+                    NumberOfGuests = r.NumberOfGuests,
+                    Status = r.Status.ToString(),
+                    TableId = r.TableId,
+                    TableNumber = r.Table != null ? r.Table.Number : null,
+                    RowVersion = Convert.ToBase64String(r.RowVersion),
+                    HasReview = r.Review != null
+                })
+                .ToListAsync();
+        }
     }
 }

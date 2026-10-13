@@ -13,5 +13,6 @@
         public int? TableId { get; set; }
         public int? TableNumber { get; set; }
         public string RowVersion { get; set; } = string.Empty;
+        public bool HasReview { get; set; }
     }
 }

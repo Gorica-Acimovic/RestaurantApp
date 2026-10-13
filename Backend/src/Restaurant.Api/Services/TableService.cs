@@ -112,18 +112,27 @@ namespace Restaurant.Api.Services
             return true;
         }
 
-        public async Task<bool> UpdateStatusAsync(int id, UpdateTableStatusRequest request)
+        public async Task<(bool Found, string? Error)> UpdateStatusAsync(int id, UpdateTableStatusRequest request)
         {
             var table = await _context.RestaurantTables.FirstOrDefaultAsync(t => t.Id == id && t.IsActive);
             if (table == null)
             {
-                return false;
+                return (false, "Table not found.");
+            }
+
+            if (request.Status == TableStatus.Available)
+            {
+                var hasOpenOrder = await _context.Orders.AnyAsync(o => o.TableId == id && o.Status == OrderStatus.Open);
+                if (hasOpenOrder)
+                {
+                    return (true, "Table has an open order. Close or cancel the order first.");
+                }
             }
 
             table.Status = request.Status;
             await _context.SaveChangesAsync();
             await _hub.Clients.All.SendAsync("TablesChanged");
-            return true;
+            return (true, null);
         }
 
         public async Task<(bool Found, string? Error)> UpdateTableAsync(int id, SaveTableRequest request)

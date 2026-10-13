@@ -17,5 +17,6 @@
 
         public int? TableId { get; set; } 
         public RestaurantTable? Table { get; set; }
+        public Review? Review { get; set; }
     }
 }

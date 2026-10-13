@@ -79,9 +79,12 @@ namespace Restaurant.Api.Controllers
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, UpdateTableStatusRequest request)
         {
-            var found = await _tableService.UpdateStatusAsync(id, request);
+            var (found, error) = await _tableService.UpdateStatusAsync(id, request);
             if (!found)
                 return NotFound(new { message = "Table not found." });
+
+            if (error is not null)
+                return Conflict(new { message = error });
 
             return NoContent();
         }

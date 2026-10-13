@@ -12,10 +12,14 @@ import { MenuManagementComponent } from './core/components/menu-management/menu-
 import { ReservationsComponent } from './core/components/reservations/reservations.component';
 import { MakeReservationComponent } from './core/components/make-reservation/make-reservation.component';
 import { RegisterComponent } from './core/components/register/register.component';
+import { OrderComponent } from './core/components/order/order.component';
+import { HomeComponent } from './core/components/home/home.component';
+import { MyReservationsComponent } from './core/components/my-reservations/my-reservations.component';
+import { ReviewsComponent } from './core/components/reviews/reviews.component';
 
 export const routes: Routes = [
 
-    {path: '', redirectTo: 'login', pathMatch: 'full'}, 
+   { path: '', component: HomeComponent, pathMatch: 'full' },
     {path: 'login', component: LoginComponent},
     { path: 'pin-login', component: PinLoginComponent },
     { path: 'register', component: RegisterComponent },
@@ -31,6 +35,9 @@ export const routes: Routes = [
         { path: 'tables', component: TablesComponent, canActivate: [roleGuard('Admin', 'Manager', 'Waiter')] },
         { path: 'menu', component: MenuManagementComponent, canActivate: [roleGuard('Manager')] },
         { path:'reservations', component: ReservationsComponent, canActivate: [roleGuard('Admin', 'Manager', 'Waiter')]},
+        { path: 'orders/:tableId', component: OrderComponent, canActivate: [roleGuard('Admin', 'Manager', 'Waiter')] },
+        { path: 'my-reservations', component: MyReservationsComponent, canActivate: [roleGuard('Guest')] },
+        { path: 'reviews', component: ReviewsComponent, canActivate: [roleGuard('Manager')] },
      ]
     }
 ];

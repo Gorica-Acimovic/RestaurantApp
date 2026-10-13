@@ -1,0 +1,69 @@
+table {
+  width: 100%;
+}
+
+.page-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.hint {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.form-error {
+  color: #b00020;
+}
+
+.status-Pending {
+  color: #e65100;
+  font-weight: 500;
+}
+
+.status-Confirmed {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.status-Cancelled {
+  color: #757575;
+}
+
+.status-NoShow {
+  color: #b00020;
+  font-weight: 500;
+}
+
+.status-Completed {
+  color: #1565c0;
+}
+
+.reviewed {
+  color: #2e7d32;
+}
+
+.review-card {
+  max-width: 560px;
+  margin-top: 24px;
+}
+
+.star-picker {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.star {
+  border: none;
+  background: none;
+  font-size: 2em;
+  color: #f9a825;
+  cursor: pointer;
+  padding: 0;
+}
+
+.comment-field {
+  width: 100%;
+}

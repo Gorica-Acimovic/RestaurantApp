@@ -68,5 +68,14 @@ namespace Restaurant.Api.Controllers
 
             return Ok(reservation);
         }
+
+        [HttpGet("mine")]
+        [Authorize(Roles = "Guest")]
+        public async Task<IActionResult> GetMyReservations()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var reservations = await _reservationService.GetMyReservationsAsync(userId);
+            return Ok(reservations);
+        }
     }
 }

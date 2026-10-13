@@ -11,7 +11,8 @@ export interface ReservationDto {
     status:ReservationStatus,
     tableId:number | null,
     tableNumber:number | null,
-    rowVersion:string
+    rowVersion:string,
+    hasReview: boolean
 
 }
 

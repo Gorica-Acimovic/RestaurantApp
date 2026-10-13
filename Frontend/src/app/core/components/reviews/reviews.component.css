@@ -1,0 +1,42 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.review {
+  max-width: 800px;
+  margin-bottom: 12px;
+}
+
+.stars {
+  color: #f9a825;
+  font-size: 1.4em;
+  letter-spacing: 2px;
+}
+
+.no-comment {
+  color: #888;
+}
+
+.response {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-left: 3px solid #f9a825;
+  background: #fafafa;
+}
+
+.response-field {
+  width: 100%;
+}
+
+.response-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.form-error {
+  color: #b00020;
+}

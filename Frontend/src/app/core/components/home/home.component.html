@@ -1,0 +1,67 @@
+<mat-toolbar color="primary">
+  <span>Restaurant</span>
+  <span class="spacer"></span>
+  <a mat-button routerLink="/menu">Menu</a>
+  <a mat-button routerLink="/make-reservation">Reserve a table</a>
+  @if (loggedIn) {
+    <a mat-button routerLink="/dashboard">Dashboard</a>
+  } @else {
+    <a mat-button routerLink="/login">Sign in</a>
+  }
+</mat-toolbar>
+
+<div class="home-page">
+  <h1>Welcome</h1>
+  <p>Browse our menu, reserve a table and tell us how your visit went.</p>
+
+  <div class="actions">
+    <a mat-flat-button routerLink="/make-reservation">Reserve a table</a>
+    <a mat-stroked-button routerLink="/menu">View menu</a>
+  </div>
+
+  @if (errorMessage) {
+    <p class="form-error">{{ errorMessage }}</p>
+  }
+
+  @if (summary) {
+    <mat-card class="rating-card">
+      @if (summary.reviewCount === 0) {
+        <mat-card-content>
+          <p>No reviews yet.</p>
+        </mat-card-content>
+      } @else {
+        <mat-card-content class="rating-content">
+          <span class="average">{{ summary.averageRating | number: '1.1-1' }}</span>
+          <span class="stars">{{ stars(summary.averageRating) }}</span>
+          <span>{{ summary.reviewCount }} {{ summary.reviewCount === 1 ? 'review' : 'reviews' }}</span>
+        </mat-card-content>
+      }
+    </mat-card>
+
+    @if (summary.latestReviews.length > 0) {
+      <h2>Latest reviews</h2>
+
+      @for (review of summary.latestReviews; track review.id) {
+        <mat-card class="review">
+          <mat-card-header>
+            <mat-card-title><span class="stars">{{ stars(review.rating) }}</span></mat-card-title>
+            <mat-card-subtitle>{{ review.guestName }}, {{ review.visitDate | date: 'dd.MM.yyyy' }}</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            @if (review.comment) {
+              <p>{{ review.comment }}</p>
+            }
+
+            @if (review.managerResponse) {
+              <div class="response">
+                <strong>Response from {{ review.responderName }}:</strong>
+                {{ review.managerResponse }}
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    }
+  }
+</div>

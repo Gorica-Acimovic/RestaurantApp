@@ -1,0 +1,93 @@
+<h2>My reservations</h2>
+
+<div class="page-actions">
+  <a mat-flat-button routerLink="/make-reservation">Reserve a table</a>
+  <button mat-button type="button" (click)="loadReservations()">Refresh</button>
+</div>
+
+@if (errorMessage) {
+  <p class="form-error">{{ errorMessage }}</p>
+}
+
+@if (loaded && reservations.length === 0 && !errorMessage) {
+  <p>You have no reservations yet.</p>
+}
+
+<table mat-table [dataSource]="reservations" class="mat-elevation-z2">
+  <ng-container matColumnDef="time">
+    <th mat-header-cell *matHeaderCellDef>Time</th>
+    <td mat-cell *matCellDef="let r">
+      {{ r.startsAt | date: 'dd.MM.yyyy HH:mm' }} - {{ r.endsAt | date: 'HH:mm' }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="guests">
+    <th mat-header-cell *matHeaderCellDef>Guests</th>
+    <td mat-cell *matCellDef="let r">{{ r.numberOfGuests }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="table">
+    <th mat-header-cell *matHeaderCellDef>Table</th>
+    <td mat-cell *matCellDef="let r">{{ r.tableNumber ?? '-' }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="status">
+    <th mat-header-cell *matHeaderCellDef>Status</th>
+    <td mat-cell *matCellDef="let r">
+      <span class="status-{{ r.status }}">{{ r.status }}</span>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let r">
+      @if (r.status === 'Pending' || r.status === 'Confirmed') {
+        <button mat-button type="button" (click)="cancelReservation(r)">Cancel</button>
+      }
+      @if (r.status === 'Completed') {
+        @if (r.hasReview) {
+          <span class="reviewed">Reviewed</span>
+        } @else {
+          <button mat-button type="button" (click)="startReview(r)">Leave a review</button>
+        }
+      }
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+</table>
+
+<p class="hint">A reservation can be cancelled up to 2 hours before it starts.</p>
+
+@if (reviewing) {
+  <mat-card class="review-card">
+    <mat-card-header>
+      <mat-card-title>Your review</mat-card-title>
+      <mat-card-subtitle>Visit on {{ reviewing.startsAt | date: 'dd.MM.yyyy HH:mm' }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="star-picker">
+        @for (value of starValues; track value) {
+          <button type="button" class="star" (click)="setRating(value)">{{ value <= rating ? '★' : '☆' }}</button>
+        }
+      </div>
+
+      @if (ratingError) {
+        <p class="form-error">{{ ratingError }}</p>
+      }
+
+      <mat-form-field appearance="outline" class="comment-field">
+        <mat-label>Comment (optional)</mat-label>
+        <textarea matInput rows="3" [formControl]="commentControl"></textarea>
+        <mat-error>Comment can have at most 1000 characters.</mat-error>
+      </mat-form-field>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-flat-button type="button" (click)="sendReview()">Send review</button>
+      <button mat-button type="button" (click)="cancelReview()">Cancel</button>
+    </mat-card-actions>
+  </mat-card>
+}
