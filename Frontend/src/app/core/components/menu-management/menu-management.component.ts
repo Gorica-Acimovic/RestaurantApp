@@ -5,11 +5,9 @@ import { ToastrService } from 'ngx-toastr';
 import { MenuItemDto, MenuSubcategoryDto } from '../../models/menu.models';
 import { CURRENCY } from '../../currency';
 import { DecimalPipe } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 
 @Component({
@@ -18,11 +16,9 @@ import { MatTableModule } from '@angular/material/table';
   imports: [
      ReactiveFormsModule,
     DecimalPipe,
-    MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatButtonModule,
     MatTableModule
   ],
   templateUrl: './menu-management.component.html',

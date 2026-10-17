@@ -1,57 +1,42 @@
-<mat-toolbar color="primary">
-  <span>Restaurant</span>
-  <span class="spacer"></span>
-  <a mat-button routerLink="/menu">Menu</a>
-  <a mat-button routerLink="/make-reservation">Reserve a table</a>
-  @if (loggedIn) {
-    <a mat-button routerLink="/dashboard">Dashboard</a>
-  } @else {
-    <a mat-button routerLink="/login">Sign in</a>
-  }
-</mat-toolbar>
-
-<div class="home-page">
+<section class="hero">
   <h1>Welcome</h1>
-  <p>Browse our menu, reserve a table and tell us how your visit went.</p>
+  <p class="lead">Browse our menu, reserve a table and tell us how your visit went.</p>
 
   <div class="actions">
-    <a mat-flat-button routerLink="/make-reservation">Reserve a table</a>
-    <a mat-stroked-button routerLink="/menu">View menu</a>
+    <a routerLink="/make-reservation" class="button primary">Reserve a table</a>
+    <a routerLink="/menu" class="button outline">View menu</a>
   </div>
+</section>
 
+<section class="reviews">
   @if (errorMessage) {
     <p class="form-error">{{ errorMessage }}</p>
   }
 
   @if (summary) {
-    <mat-card class="rating-card">
+    <div class="rating">
       @if (summary.reviewCount === 0) {
-        <mat-card-content>
-          <p>No reviews yet.</p>
-        </mat-card-content>
+        <p>No reviews yet.</p>
       } @else {
-        <mat-card-content class="rating-content">
-          <span class="average">{{ summary.averageRating | number: '1.1-1' }}</span>
-          <span class="stars">{{ stars(summary.averageRating) }}</span>
-          <span>{{ summary.reviewCount }} {{ summary.reviewCount === 1 ? 'review' : 'reviews' }}</span>
-        </mat-card-content>
+        <span class="average">{{ summary.averageRating | number: '1.1-1' }}</span>
+        <span class="stars">{{ stars(summary.averageRating) }}</span>
+        <span class="count">{{ summary.reviewCount }} {{ summary.reviewCount === 1 ? 'review' : 'reviews' }}</span>
       }
-    </mat-card>
+    </div>
 
     @if (summary.latestReviews.length > 0) {
       <h2>Latest reviews</h2>
 
-      @for (review of summary.latestReviews; track review.id) {
-        <mat-card class="review">
-          <mat-card-header>
-            <mat-card-title><span class="stars">{{ stars(review.rating) }}</span></mat-card-title>
-            <mat-card-subtitle>{{ review.guestName }}, {{ review.visitDate | date: 'dd.MM.yyyy' }}</mat-card-subtitle>
-          </mat-card-header>
+      <div class="review-grid">
+        @for (review of summary.latestReviews; track review.id) {
+          <article class="review">
+            <span class="stars">{{ stars(review.rating) }}</span>
 
-          <mat-card-content>
             @if (review.comment) {
-              <p>{{ review.comment }}</p>
+              <p class="comment">{{ review.comment }}</p>
             }
+
+            <p class="author">{{ review.guestName }}, {{ review.visitDate | date: 'dd.MM.yyyy' }}</p>
 
             @if (review.managerResponse) {
               <div class="response">
@@ -59,9 +44,9 @@
                 {{ review.managerResponse }}
               </div>
             }
-          </mat-card-content>
-        </mat-card>
-      }
+          </article>
+        }
+      </div>
     }
   }
-</div>
+</section>

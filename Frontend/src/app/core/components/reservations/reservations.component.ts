@@ -19,7 +19,6 @@ import { RealtimeService } from '../../services/realtime.service';
     DatePipe,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
     MatTableModule
   ],
   templateUrl: './reservations.component.html',
@@ -82,6 +81,14 @@ export class ReservationsComponent implements OnInit,OnDestroy{
           this.loadReservations();
         }
       });
+  }
+
+  showToday():void{
+    this.dateControl.setValue(this.today());
+  }
+
+  showAll():void {
+    this.dateControl.setValue('');
   }
 
   private today(): string {

@@ -1,13 +1,11 @@
-<h2>Menu management</h2>
+<h2 class="page-title">Menu management</h2>
 
-<mat-card class="form-card">
-  <mat-card-header>
-    <mat-card-title>{{ editingItem ? 'Edit menu item' : 'Add menu item' }}</mat-card-title>
-  </mat-card-header>
+<div class="panel">
+  <h3>{{ editingItem ? 'Edit menu item' : 'Add menu item' }}</h3>
 
-  <mat-card-content>
-    <form [formGroup]="form" #formDirective="ngForm" (ngSubmit)="save(formDirective)" class="menu-form">
-      <mat-form-field appearance="outline">
+  <form [formGroup]="form" #formDirective="ngForm" (ngSubmit)="save(formDirective)">
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
         <mat-label>Name</mat-label>
         <input matInput formControlName="name" />
         @if (form.controls['name'].hasError('required')) {
@@ -17,7 +15,7 @@
         }
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="full-width">
         <mat-label>Price ({{ currency }})</mat-label>
         <input matInput type="number" step="0.01" formControlName="price" />
         @if (form.controls['price'].hasError('required')) {
@@ -26,92 +24,98 @@
           <mat-error>Price must be greater than 0.</mat-error>
         }
       </mat-form-field>
+    </div>
 
-      <mat-form-field appearance="outline" class="full-row">
-        <mat-label>Description</mat-label>
-        <textarea matInput rows="2" formControlName="description"></textarea>
-        <mat-error>Description can have at most 500 characters.</mat-error>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput rows="2" formControlName="description"></textarea>
+      <mat-error>Description can have at most 500 characters.</mat-error>
+    </mat-form-field>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Category</mat-label>
+        <mat-select formControlName="category" (selectionChange)="onCategoryChange()">
+          <mat-option value="Food">Food</mat-option>
+          <mat-option value="Drink">Drink</mat-option>
+        </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
-  <mat-label>Category</mat-label>
-  <mat-select formControlName="category" (selectionChange)="onCategoryChange()">
-    <mat-option value="Food">Food</mat-option>
-    <mat-option value="Drink">Drink</mat-option>
-  </mat-select>
-</mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Subcategory</mat-label>
+        <mat-select formControlName="subcategoryId">
+          @for (s of filteredSubcategories(); track s.id) {
+            <mat-option [value]="s.id">{{ s.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>Subcategory is required.</mat-error>
+      </mat-form-field>
+    </div>
 
-<mat-form-field appearance="outline">
-  <mat-label>Subcategory</mat-label>
-  <mat-select formControlName="subcategoryId">
-    @for (s of filteredSubcategories(); track s.id) {
-      <mat-option [value]="s.id">{{ s.name }}</mat-option>
-    }
-  </mat-select>
-  <mat-error>Subcategory is required.</mat-error>
-</mat-form-field>
+    <div class="form-buttons">
+      <button type="submit" class="button primary">
+        {{ editingItem ? 'Save changes' : 'Add' }}
+      </button>
+      @if (editingItem) {
+        <button type="button" class="button outline" (click)="cancelEdit(formDirective)">Cancel</button>
+      }
+    </div>
+  </form>
 
-      <div class="form-buttons">
-        <button mat-flat-button type="submit">
-          {{ editingItem ? 'Save changes' : 'Add' }}
-        </button>
-        @if (editingItem) {
-          <button mat-button type="button" (click)="cancelEdit(formDirective)">Cancel</button>
-        }
-      </div>
-    </form>
-
-    @if (saveError) {
-      <p class="form-error">{{ saveError }}</p>
-    }
-  </mat-card-content>
-</mat-card>
+  @if (saveError) {
+    <p class="form-error">{{ saveError }}</p>
+  }
+</div>
 
 @if (errorMessage) {
   <p class="form-error">{{ errorMessage }}</p>
 }
 
-<table mat-table [dataSource]="items" class="mat-elevation-z2">
-  <ng-container matColumnDef="name">
-    <th mat-header-cell *matHeaderCellDef>Name</th>
-    <td mat-cell *matCellDef="let item">{{ item.name }}</td>
-  </ng-container>
+<div class="panel table-wrap">
+  <table mat-table [dataSource]="items">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let item">{{ item.name }}</td>
+    </ng-container>
 
-  <ng-container matColumnDef="category">
-    <th mat-header-cell *matHeaderCellDef>Category</th>
-    <td mat-cell *matCellDef="let item">{{ item.category }}</td>
-  </ng-container>
+    <ng-container matColumnDef="category">
+      <th mat-header-cell *matHeaderCellDef>Category</th>
+      <td mat-cell *matCellDef="let item">{{ item.category }}</td>
+    </ng-container>
 
-  <ng-container matColumnDef="subcategory">
-  <th mat-header-cell *matHeaderCellDef>Subcategory</th>
-  <td mat-cell *matCellDef="let item">{{ item.subcategoryName }}</td>
-</ng-container>
+    <ng-container matColumnDef="subcategory">
+      <th mat-header-cell *matHeaderCellDef>Subcategory</th>
+      <td mat-cell *matCellDef="let item">{{ item.subcategoryName }}</td>
+    </ng-container>
 
-  <ng-container matColumnDef="price">
-    <th mat-header-cell *matHeaderCellDef>Price</th>
-    <td mat-cell *matCellDef="let item">{{ item.price | number: '1.2-2' }} {{ currency }}</td>
-  </ng-container>
+    <ng-container matColumnDef="price">
+      <th mat-header-cell *matHeaderCellDef>Price</th>
+      <td mat-cell *matCellDef="let item">{{ item.price | number: '1.2-2' }} {{ currency }}</td>
+    </ng-container>
 
-  <ng-container matColumnDef="status">
-    <th mat-header-cell *matHeaderCellDef>Status</th>
-    <td mat-cell *matCellDef="let item">
-      <span [class.unavailable-text]="!item.isAvailable">
-        {{ item.isAvailable ? 'Available' : 'Unavailable' }}
-      </span>
-    </td>
-  </ng-container>
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let item">
+        <span [class.unavailable-text]="!item.isAvailable">
+          {{ item.isAvailable ? 'Available' : 'Unavailable' }}
+        </span>
+      </td>
+    </ng-container>
 
-  <ng-container matColumnDef="actions">
-    <th mat-header-cell *matHeaderCellDef></th>
-    <td mat-cell *matCellDef="let item">
-      <button mat-button type="button" (click)="startEdit(item)">Edit</button>
-      <button mat-button type="button" (click)="toggleAvailability(item)">
-        {{ item.isAvailable ? 'Make unavailable' : 'Make available' }}
-      </button>
-      <button mat-button type="button" (click)="removeItem(item, formDirective)">Remove</button>
-    </td>
-  </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let item">
+        <div class="row-actions">
+          <button type="button" class="button outline small" (click)="startEdit(item)">Edit</button>
+          <button type="button" class="button outline small" (click)="toggleAvailability(item)">
+            {{ item.isAvailable ? 'Make unavailable' : 'Make available' }}
+          </button>
+          <button type="button" class="button danger small" (click)="removeItem(item, formDirective)">Remove</button>
+        </div>
+      </td>
+    </ng-container>
 
-  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-</table>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+</div>

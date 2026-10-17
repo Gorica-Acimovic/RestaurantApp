@@ -4,46 +4,41 @@
 
 .order-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 16px;
+  margin-bottom: 24px;
+}
+
+.order-header .page-title {
+  margin: 0;
 }
 
 .seats {
-  font-size: 0.6em;
-  color: #666;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
-.items-table {
-  width: 100%;
+.panel h3.with-subtitle {
+  margin-bottom: 8px;
 }
 
-.order-total {
-  font-weight: 500;
-  font-size: 1.1em;
-  margin-top: 16px;
+.subtitle {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
-.open-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding-top: 16px;
-}
-
-.form-error {
-  color: #b00020;
-}
-.section-card {
-  margin-bottom: 16px;
+.empty {
+  color: var(--muted);
 }
 
 .add-form {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
   align-items: flex-start;
-  padding-top: 16px;
+  gap: 12px;
 }
 
 .item-field {
@@ -58,34 +53,84 @@
   flex: 2 1 220px;
 }
 
+.add-button {
+  margin-top: 8px;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.button.qty {
+  padding: 4px 12px;
+}
+
+.order-total {
+  margin-top: 24px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  color: var(--accent);
+}
+
 .close-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: 16px;
 }
 
 .payment-field {
   width: 140px;
 }
 
+.open-panel {
+  max-width: 480px;
+}
+
 .invoice-table {
   width: 100%;
+  margin-bottom: 16px;
   border-collapse: collapse;
-  margin-bottom: 12px;
 }
 
 .invoice-table th,
 .invoice-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
   text-align: left;
-  padding: 6px 8px;
-  border-bottom: 1px solid #ddd;
+}
+
+.invoice-table th {
+  color: var(--muted);
+  font-weight: 400;
 }
 
 @media print {
   .no-print,
   .order-header button {
     display: none;
+  }
+
+  .invoice {
+    border: none;
+    background: #fff;
+    color: #000;
+  }
+
+  .invoice .subtitle,
+  .invoice-table th {
+    color: #000;
+  }
+
+  .invoice .order-total {
+    color: #000;
+  }
+
+  .invoice-table th,
+  .invoice-table td {
+    border-bottom: 1px solid #999;
   }
 }

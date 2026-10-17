@@ -4,8 +4,6 @@ import { FormBuilder, FormControl, FormGroup, FormGroupDirective, ReactiveFormsM
 import { ActivatedRoute, Router } from '@angular/router';
 import { merge, Subscription } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -27,8 +25,6 @@ import { CURRENCY } from '../../currency';
     ReactiveFormsModule,
     DatePipe,
     DecimalPipe,
-    MatButtonModule,
-    MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,

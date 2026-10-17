@@ -1,11 +1,22 @@
-.spacer {
-  flex: 1 1 auto;
-}
-
 .menu-page {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 48px 24px 80px;
+}
+
+.menu-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.menu-header h1 {
+  margin: 0 0 8px;
+  font-size: 3.5rem;
+}
+
+.menu-header p {
+  margin: 0;
+  color: var(--muted);
 }
 
 .filters {
@@ -18,33 +29,89 @@
   flex: 1 1 260px;
 }
 
-.items {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-.item.unavailable {
-  opacity: 0.55;
-}
-
-.price {
-  font-weight: 500;
-}
-
-.unavailable-label {
-  color: #b00020;
-  font-weight: 500;
-}
-
-.form-error {
-  color: #b00020;
-}
 .category-title {
-  margin: 32px 0 8px;
+  margin: 56px 0 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  font-size: 2.4rem;
 }
 
 .group-title {
-  margin: 20px 0 8px;
-  color: #555;
+  margin: 36px 0 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 0 48px;
+}
+
+.item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.item-name {
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.price {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.description {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.item.unavailable {
+  opacity: 0.5;
+}
+
+.unavailable-label {
+  margin: 8px 0 0;
+  color: var(--error);
+  font-size: 0.8rem;
+}
+
+.empty {
+  color: var(--muted);
+  text-align: center;
+}
+
+.form-error {
+  color: var(--error);
+}
+.menu-cta {
+  margin-top: 72px;
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.8rem;
+  line-height: 1.5;
+}
+
+.menu-cta a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent);
 }

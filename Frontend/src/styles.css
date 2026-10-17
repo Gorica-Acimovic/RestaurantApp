@@ -1,4 +1,322 @@
 /* You can add global styles to this file, and also import other style files */
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+:root {
+  --bg: #0f1a17;
+  --surface: #16231f;
+  --surface-2: #1d2e29;
+  --text: #e8e4d8;
+  --muted: #a8b0a6;
+  --accent: #b8a24c;
+  --border: rgba(255, 255, 255, 0.12);
+  --error: #e57373;
+}
+
+body, .mat-typography {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.button{
+  display: inline-block;
+  padding: 14px 28px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button.primary {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+.button.outline {
+  background-color: transparent;
+  color: var(--accent);
+}
+
+.button:hover {
+  opacity: 0.85;
+}
+:root {
+  --mdc-outlined-text-field-outline-color: var(--border);
+  --mdc-outlined-text-field-hover-outline-color: var(--muted);
+  --mdc-outlined-text-field-focus-outline-color: var(--accent);
+  --mdc-outlined-text-field-label-text-color: var(--muted);
+  --mdc-outlined-text-field-focus-label-text-color: var(--accent);
+  --mdc-outlined-text-field-caret-color: var(--accent);
+  --mdc-outlined-text-field-input-text-color: var(--text);
+  --mat-table-background-color: transparent;
+  --mat-table-header-headline-color: var(--muted);
+  --mat-table-row-item-label-text-color: var(--text);
+  --mat-table-row-item-outline-color: var(--border);
+  --mdc-checkbox-selected-icon-color: var(--accent);
+  --mdc-checkbox-selected-hover-icon-color: var(--accent);
+  --mdc-checkbox-selected-focus-icon-color: var(--accent);
+  --mdc-checkbox-selected-pressed-icon-color: var(--accent);
+  --mdc-checkbox-selected-checkmark-color: var(--bg);
+  --mdc-checkbox-unselected-icon-color: var(--muted);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-page {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
+  padding: 48px 40px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.auth-card h1 {
+  margin: 0 0 32px;
+  text-align: center;
+  font-size: 2.4rem;
+}
+
+.auth-card .full-width {
+  width: 100%;
+}
+
+.auth-card .button {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 520px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.auth-links {
+  margin-top: 28px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 2;
+}
+
+.auth-links p {
+  margin: 0;
+}
+
+.auth-links a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.auth-links a:hover {
+  text-decoration: underline;
+}
+
+.form-error {
+  color: var(--error);
+  margin: 0 0 12px;
+}
+input[type='date'],
+input[type='time'] {
+  color-scheme: dark;
+}
+
+.navbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+}
+
+.links a,
+.links button {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.links a:hover,
+.links a.active,
+.links button:hover {
+  color: var(--text);
+}
+
+.links a.reserve-button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+@media (max-width: 720px) {
+  .navbar {
+    padding: 16px 24px;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.page-title {
+  margin: 0 0 24px;
+  font-size: 2.4rem;
+}
+
+.panel {
+  margin-bottom: 32px;
+  padding: 32px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.panel h3 {
+  margin: 0 0 24px;
+  font-size: 1.6rem;
+}
+
+.button.small {
+  padding: 8px 16px;
+  font-size: 0.75rem;
+}
+
+.button.danger {
+  border-color: var(--error);
+  background-color: transparent;
+  color: var(--error);
+}
+.status-active {
+  color: var(--accent);
+}
+
+.status-inactive {
+  color: var(--muted);
+}
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table-wrap table {
+  width: 100%;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.review {
+  padding: 24px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.stars {
+  color: var(--accent);
+  letter-spacing: 3px;
+}
+
+.comment {
+  line-height: 1.6;
+}
+
+.author {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.response {
+  margin-top: 16px;
+  padding-left: 12px;
+  border-left: 2px solid var(--accent);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .navbar {
+    display: none;
+  }
+}
+
+.status-Pending {
+  color: #ffb300;
+}
+
+.status-Confirmed {
+  color: #6fbf73;
+}
+
+.status-Completed {
+  color: var(--accent);
+}
+
+.status-Cancelled {
+  color: var(--muted);
+}
+
+.status-NoShow {
+  color: var(--error);
+}

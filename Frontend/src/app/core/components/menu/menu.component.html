@@ -1,11 +1,9 @@
-<mat-toolbar color="primary">
-  <span>Restaurant menu</span>
-  <span class="spacer"></span>
-  <a mat-button routerLink="/login">Sign in</a>
-  <a mat-button routerLink="/make-reservation">Reserve a table</a>
-</mat-toolbar>
-
 <div class="menu-page">
+  <header class="menu-header">
+    <h1>Our menu</h1>
+    <p>Fresh dishes and drinks, prepared every day.</p>
+  </header>
+
   <div class="filters">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Search by name</mat-label>
@@ -27,33 +25,35 @@
   }
 
   @if (loaded && items.length === 0 && !errorMessage) {
-    <p>No items found.</p>
+    <p class="empty">No items found.</p>
   }
 
- @for (group of groups; track group.subcategoryId; let i = $index) {
-  @if (i === 0 || groups[i - 1].category !== group.category) {
-    <h2 class="category-title">{{ group.category === 'Food' ? 'Food' : 'Drinks' }}</h2>
-  }
+  @for (group of groups; track group.subcategoryId; let i = $index) {
+    @if (i === 0 || groups[i - 1].category !== group.category) {
+      <h2 class="category-title">{{ group.category === 'Food' ? 'Food' : 'Drinks' }}</h2>
+    }
 
-  <h3 class="group-title">{{ group.name }}</h3>
+    <h3 class="group-title">{{ group.name }}</h3>
 
-  <div class="items">
-    @for (item of group.items; track item.id) {
-      <mat-card class="item" [class.unavailable]="!item.isAvailable">
-        <mat-card-header>
-          <mat-card-title>{{ item.name }}</mat-card-title>
-        </mat-card-header>
+    <div class="items">
+      @for (item of group.items; track item.id) {
+        <article class="item" [class.unavailable]="!item.isAvailable">
+          <div class="item-top">
+            <span class="item-name">{{ item.name }}</span>
+            <span class="price">{{ item.price | number: '1.2-2' }} {{ currency }}</span>
+          </div>
 
-        <mat-card-content>
-          <p>{{ item.description }}</p>
-          <p class="price">{{ item.price | number: '1.2-2' }} {{ currency }}</p>
+          <p class="description">{{ item.description }}</p>
 
           @if (!item.isAvailable) {
             <p class="unavailable-label">Currently unavailable</p>
           }
-        </mat-card-content>
-      </mat-card>
-    }
-  </div>
-}
+        </article>
+      }
+    </div>
+  }
+    <p class="menu-cta">
+    If you are not at the table, you are on the menu.
+    <a routerLink="/make-reservation">Reserve your seat</a>
+  </p>
 </div>

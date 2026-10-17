@@ -1,9 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { ReviewService } from '../../services/review.service';
 import { AuthService } from '../../services/auth.service';
 import { ReviewSummaryDto } from '../../models/review.models';
@@ -16,9 +13,6 @@ import { stars } from '../../stars';
     RouterLink,
     DatePipe,
     DecimalPipe,
-    MatButtonModule,
-    MatCardModule,
-    MatToolbarModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'

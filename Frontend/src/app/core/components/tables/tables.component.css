@@ -1,4 +1,142 @@
+
+.hint {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.dot.available {
+  background: #4caf50;
+}
+
+.dot.reserved {
+  background: #ffb300;
+}
+
+.dot.occupied {
+  background: #e53935;
+}
+
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+
 .hall {
+  width: 100%;
+  max-width: 900px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  touch-action: none;
+  user-select: none;
+}
+
+.hall-floor {
+  fill: var(--surface);
+}
+
+.table circle {
+  stroke: var(--bg);
+  stroke-width: 0.4;
+}
+
+.table circle.available {
+  fill: #4caf50;
+}
+
+.table circle.reserved {
+  fill: #ffb300;
+}
+
+.table circle.occupied {
+  fill: #e53935;
+}
+
+.table.selected circle {
+  stroke: var(--accent);
+  stroke-width: 1;
+}
+
+.table.draggable {
+  cursor: grab;
+}
+
+.table.draggable:active {
+  cursor: grabbing;
+}
+
+.table-number {
+  font-size: 5px;
+  font-weight: bold;
+  fill: var(--bg);
+  pointer-events: none;
+}
+
+.table-capacity {
+  font-size: 3px;
+  fill: var(--muted);
+  pointer-events: none;
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.side-panel .panel {
+  margin-bottom: 0;
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-buttons .button {
+  width: auto;
+  flex: 1;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+
+/* .hall {
   width: 100%;
   max-width: 900px;
   border: 1px solid #ccc;
@@ -121,4 +259,4 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
-}
+} */

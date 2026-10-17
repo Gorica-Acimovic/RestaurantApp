@@ -1,27 +1,31 @@
-<mat-toolbar color="primary">
-  <span>Restaurant</span>
+<nav class="navbar">
+  <a routerLink="/" class="logo">Restaurant</a>
+
+  <div class="links">
     @if (session?.role === 'Admin') {
-    <a mat-button routerLink="/dashboard/managers">Managers</a>
-  }
-  @if (session?.role === 'Manager') {
-  <a mat-button routerLink="/dashboard/waiters">Waiters</a>
-<a mat-button routerLink="/dashboard/menu">Menu</a>
-<a mat-button routerLink="/dashboard/reviews">Reviews</a>
-  }
-   @if (session?.role !== 'Guest') {
-  <a mat-button routerLink="/dashboard/tables">Hall</a>
-  <a mat-button routerLink="/dashboard/reservations">Reservations</a>
-}
+      <a routerLink="/dashboard/managers" routerLinkActive="active">Managers</a>
+    }
 
-@if (session?.role === 'Guest') {
-  <a mat-button routerLink="/dashboard/my-reservations">My reservations</a>
-}
-  <span class="spacer"></span>
-  <span>{{ session?.firstName }} {{ session?.lastName }} ({{ session?.role }})</span>
-  <button mat-button (click)="logout()">Log out</button>
-</mat-toolbar>
+    @if (session?.role === 'Manager') {
+      <a routerLink="/dashboard/waiters" routerLinkActive="active">Waiters</a>
+      <a routerLink="/dashboard/menu" routerLinkActive="active">Menu</a>
+      <a routerLink="/dashboard/reviews" routerLinkActive="active">Reviews</a>
+    }
 
-<div class="content">
- 
+    @if (session?.role !== 'Guest') {
+      <a routerLink="/dashboard/tables" routerLinkActive="active">Hall</a>
+      <a routerLink="/dashboard/reservations" routerLinkActive="active">Reservations</a>
+    }
+
+    @if (session?.role === 'Guest') {
+      <a routerLink="/dashboard/my-reservations" routerLinkActive="active">My reservations</a>
+    }
+
+    <span class="user">{{ session?.firstName }} {{ session?.lastName }} ({{ session?.role }})</span>
+    <button type="button" (click)="logout()">Log out</button>
+  </div>
+</nav>
+
+<main class="content">
   <router-outlet></router-outlet>
-</div>
+</main>

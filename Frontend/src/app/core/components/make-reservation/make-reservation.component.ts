@@ -1,12 +1,8 @@
 import { Component } from '@angular/core';
 import { ReservationService } from '../../services/reservation.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
-import { RouterLink } from '@angular/router';
 import { ReservationDto, ReservationRequest } from '../../models/reservation.models';
-import {  MatToolbarModule } from '@angular/material/toolbar';
 import { DatePipe } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,13 +12,10 @@ import { MatButtonModule } from '@angular/material/button';
   standalone: true,
   imports: [
      ReactiveFormsModule,
-    RouterLink,
     DatePipe,
-    MatToolbarModule,
-    MatCardModule,
-    MatFormFieldModule,
+   MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+   
   ],
   templateUrl: './make-reservation.component.html',
   styleUrl: './make-reservation.component.css'

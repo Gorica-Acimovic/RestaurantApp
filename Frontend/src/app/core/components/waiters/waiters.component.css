@@ -1,21 +1,5 @@
-.register-card {
-  margin-bottom: 24px;
-}
-
-.register-form {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0 16px;
-  padding-top: 16px;
-}
-
-.register-form button {
-  grid-column: span 2;
-  justify-self: start;
-}
-
-.form-error {
-  color: #b00020;
+.table-wrap {
+  overflow-x: auto;
 }
 
 table {

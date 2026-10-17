@@ -1,7 +1,7 @@
-<h2>Reviews</h2>
+<h2 class="page-title">Reviews</h2>
 
 <div class="filters">
-  <mat-form-field appearance="outline">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
     <mat-label>Rating</mat-label>
     <mat-select [formControl]="ratingControl">
       <mat-option [value]="null">All</mat-option>
@@ -13,7 +13,7 @@
 
   <mat-checkbox [formControl]="unansweredControl">Only without response</mat-checkbox>
 
-  <button mat-button type="button" (click)="loadReviews()">Refresh</button>
+  <button type="button" class="button outline small" (click)="loadReviews()">Refresh</button>
 </div>
 
 @if (errorMessage) {
@@ -21,24 +21,23 @@
 }
 
 @if (loaded && reviews.length === 0 && !errorMessage) {
-  <p>No reviews found.</p>
+  <p class="empty">No reviews found.</p>
 }
 
-@for (review of reviews; track review.id) {
-  <mat-card class="review">
-    <mat-card-header>
-      <mat-card-title><span class="stars">{{ stars(review.rating) }}</span></mat-card-title>
-      <mat-card-subtitle>
-        {{ review.guestName }}, visit {{ review.visitDate | date: 'dd.MM.yyyy' }}, left {{ review.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-      </mat-card-subtitle>
-    </mat-card-header>
+<div class="review-list">
+  @for (review of reviews; track review.id) {
+    <article class="review">
+      <span class="stars">{{ stars(review.rating) }}</span>
 
-    <mat-card-content>
       @if (review.comment) {
-        <p>{{ review.comment }}</p>
+        <p class="comment">{{ review.comment }}</p>
       } @else {
         <p class="no-comment">No comment.</p>
       }
+
+      <p class="author">
+        {{ review.guestName }}, visit {{ review.visitDate | date: 'dd.MM.yyyy' }}, left {{ review.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+      </p>
 
       @if (review.managerResponse) {
         <div class="response">
@@ -46,19 +45,19 @@
           {{ review.managerResponse }}
         </div>
       } @else if (respondingId === review.id) {
-        <mat-form-field appearance="outline" class="response-field">
+        <mat-form-field appearance="outline" class="full-width response-field">
           <mat-label>Your response</mat-label>
           <textarea matInput rows="3" [formControl]="responseControl"></textarea>
           <mat-error>Response is required (at most 1000 characters).</mat-error>
         </mat-form-field>
 
         <div class="response-actions">
-          <button mat-flat-button type="button" (click)="sendResponse(review)">Send response</button>
-          <button mat-button type="button" (click)="cancelResponse()">Cancel</button>
+          <button type="button" class="button primary small" (click)="sendResponse(review)">Send response</button>
+          <button type="button" class="button outline small" (click)="cancelResponse()">Cancel</button>
         </div>
       } @else {
-        <button mat-stroked-button type="button" (click)="startResponse(review)">Respond</button>
+        <button type="button" class="button outline small respond" (click)="startResponse(review)">Respond</button>
       }
-    </mat-card-content>
-  </mat-card>
-}
+    </article>
+  }
+</div>

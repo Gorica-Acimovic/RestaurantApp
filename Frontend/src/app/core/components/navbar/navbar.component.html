@@ -1,0 +1,13 @@
+<nav class="navbar">
+    <a routerLink="/" class="logo"> Restaurant </a>
+    <div class="links">
+        <a routerLink="/menu" routerLinkActive="active">Menu</a>
+        @if(isLoggedIn()){
+            <a routerLink="/dashboard">Dashboard</a>
+        } @else{
+            <a routerLink="/login" routerLinkActive="active">Sign in</a>
+        }
+        <a routerLink="/make-reservation"> Reserve a table </a>
+    </div>
+
+</nav>

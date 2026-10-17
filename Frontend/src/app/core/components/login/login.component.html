@@ -1,39 +1,34 @@
-<div class="login-page">
-  <mat-card class="login-card">
-    <mat-card-header>
-      <mat-card-title>Sign in</mat-card-title>
-      <mat-card-actions>
-  <a mat-button routerLink="/pin-login">Waiter? Sign in with PIN</a>
-  <a mat-button routerLink="/menu">View menu</a>
-  <a mat-button routerLink="/make-reservation">Reserve a table</a>
-  <a mat-button routerLink="/register">Create account</a>cd
-</mat-card-actions>
-    </mat-card-header>
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Sign in</h1>
 
-    <mat-card-content>
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" formControlName="email" />
-          @if (form.controls['email'].hasError('required')) {
-            <mat-error>Email is required.</mat-error>
-          } @else if (form.controls['email'].hasError('email')) {
-            <mat-error>Enter a valid email address.</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
-          <input matInput type="password" formControlName="password" />
-          <mat-error>Password is required.</mat-error>
-        </mat-form-field>
-
-        @if (errorMessage) {
-          <p class="form-error">{{ errorMessage }}</p>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" />
+        @if (form.controls['email'].hasError('required')) {
+          <mat-error>Email is required.</mat-error>
+        } @else if (form.controls['email'].hasError('email')) {
+          <mat-error>Enter a valid email address.</mat-error>
         }
+      </mat-form-field>
 
-        <button mat-flat-button type="submit" class="full-width">Sign in</button>
-      </form>
-    </mat-card-content>
-  </mat-card>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" />
+        <mat-error>Password is required.</mat-error>
+      </mat-form-field>
+
+      @if (errorMessage) {
+        <p class="form-error">{{ errorMessage }}</p>
+      }
+
+      <button type="submit" class="button primary">Sign in</button>
+    </form>
+
+    <div class="auth-links">
+      <p>Waiter? <a routerLink="/pin-login">Sign in with PIN</a></p>
+      <p>Not registered? <a routerLink="/register">Register here</a></p>
+    </div>
+  </div>
 </div>

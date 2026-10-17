@@ -1,14 +1,12 @@
 import { LoginResponse } from '../../models/auth.models';
 import { AuthService } from '../../services/auth.service';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RealtimeService } from '../../services/realtime.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [MatToolbarModule, MatButtonModule, RouterOutlet, RouterLink],
+  imports: [ RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

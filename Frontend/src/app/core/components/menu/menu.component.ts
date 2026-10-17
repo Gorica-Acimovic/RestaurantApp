@@ -2,31 +2,25 @@ import { Component, OnInit } from '@angular/core';
 import { MenuService } from '../../services/menu.service';
 import { FormBuilder, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { MenuGroup, MenuItemDto } from '../../models/menu.models';
 import { CURRENCY } from '../../currency';
-import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSelectModule } from '@angular/material/select';
 import { debounceTime } from 'rxjs';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
   imports: [
    ReactiveFormsModule,
-    RouterLink,
     DecimalPipe,
-    MatToolbarModule,
-    MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatButtonModule
+    RouterLink
   ],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.css'
