@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
 using Restaurant.Api.DTOs;
+using Restaurant.Api.Infrastructure;
 using Restaurant.Api.Interfaces;
 using Restaurant.Api.Models;
 using System.Security.Claims;
@@ -12,7 +13,7 @@ namespace Restaurant.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Manager")]
-    public class WaitersController : ControllerBase
+    public class WaitersController : ApiControllerBase
     {
         private readonly IUserService _userService;
         public WaitersController(IUserService userService)
@@ -27,7 +28,7 @@ namespace Restaurant.Api.Controllers
 
             var (waiter, error) = await _userService.RegisterWaiterAsync(request, managerId);
             if (waiter is null)
-                return Conflict(new { message = error });
+                return Error(409, error);
 
             return Ok(waiter);
         }
@@ -49,10 +50,10 @@ namespace Restaurant.Api.Controllers
             var (found, error) = await _userService.SetWaitersProfileStatus(waiterId, managerId, true);
 
             if (!found)
-                return NotFound(new { message = "Waiter is not found or you don't have permission to activate this waiter." });
+                return Error(404, "Waiter is not found or you don't have permission to activate this waiter.");
 
             if (error is not null)
-                return Conflict(new { message = error });
+                return Error(409, error);
 
             return NoContent();
         }
@@ -65,7 +66,7 @@ namespace Restaurant.Api.Controllers
             var (found, _) = await _userService.SetWaitersProfileStatus(waiterId, managerId, false);
 
             if (!found)
-                return NotFound(new { message = "Waiter is not found or you don't have permission to deactivate this waiter." });
+                return Error(404, "Waiter is not found or you don't have permission to deactivate this waiter.");
 
             return NoContent();
         }
@@ -78,10 +79,10 @@ namespace Restaurant.Api.Controllers
             var (found, error) = await _userService.UpdateWaiterAsync(waiterId, managerId, request);
 
             if (!found)
-                return NotFound(new { message = "Waiter not found." });
+                return Error(404, "Waiter not found.");
 
             if (error is not null)
-                return Conflict(new { message = error });
+                return Error(409, error);
 
             return NoContent();
         }

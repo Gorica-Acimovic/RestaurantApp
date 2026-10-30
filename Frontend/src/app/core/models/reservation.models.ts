@@ -27,5 +27,15 @@ export interface ReservationRequest{
 
 export interface ChangeReservationStatusRequest{
     status:ReservationStatus,
-    rowVersion:string
+    rowVersion:string,
+    tableId?: number | null
+}
+
+export interface AvailableTableDto {
+    id: number,
+    number: number,
+    capacity: number,
+    positionX: number,
+    positionY: number,
+    isAvailable: boolean
 }

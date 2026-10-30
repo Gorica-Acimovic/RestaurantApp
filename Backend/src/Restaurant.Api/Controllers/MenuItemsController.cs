@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Api.DTOs;
+using Restaurant.Api.Infrastructure;
 using Restaurant.Api.Interfaces;
 using Restaurant.Api.Models;
 
@@ -10,7 +11,8 @@ namespace Restaurant.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
    
-    public class MenuItemsController : ControllerBase
+    public class MenuItemsController : ApiControllerBase
+
     {
         private readonly IMenuService _menuItemService;
 
@@ -32,7 +34,7 @@ namespace Restaurant.Api.Controllers
         {
             var (menuItem, error) = await _menuItemService.CreateMenuItemAsync(request);
             if (error is not null)
-                return BadRequest(new { message = error });
+                return Error (400,error);
 
             return Ok(menuItem);
         }
@@ -43,10 +45,10 @@ namespace Restaurant.Api.Controllers
         {
             var (found, error) = await _menuItemService.UpdateMenuItemAsync(id, request);
             if (!found)
-                return NotFound(new { message = "Menu item not found." });
+                return Error(404, "Menu item not found.");
 
             if (error is not null)
-                return BadRequest(new { message = error });
+                return Error (400,error);
 
             return NoContent();
         }
@@ -57,7 +59,7 @@ namespace Restaurant.Api.Controllers
         {
             var deleted = await _menuItemService.DeleteMenuItemAsync(id);
             if (!deleted)
-                return NotFound(new { message = "Menu item not found." });
+                return Error(404, "Menu item not found.");
             return NoContent();
         }
 
@@ -67,7 +69,7 @@ namespace Restaurant.Api.Controllers
         {
             var found = await _menuItemService.SetAvailabilityAsync(id, request.IsAvailable);
             if (!found)
-                return NotFound(new { message = "Menu item not found." });
+                return Error(404, "Menu item not found.");
 
             return NoContent();
         }

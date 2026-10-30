@@ -28,6 +28,7 @@ export class ManagersComponent implements OnInit {
   errorMessage: string = '';
   registerErrorMessage: string = '';
   form:FormGroup;
+  editingManager: UserDto | null = null;
 
   constructor(private managerService: ManagerService, private formBuilder:FormBuilder, private toastr:ToastrService) {
     this.form = this.formBuilder.group({
@@ -78,4 +79,56 @@ export class ManagersComponent implements OnInit {
 }
     });
   }
+
+  startEdit(manager: UserDto): void {
+  this.editingManager = manager;
+  this.registerErrorMessage = '';
+
+  this.form.controls['password'].disable();
+  this.form.setValue({
+    firstName: manager.firstName,
+    lastName: manager.lastName,
+    email: manager.email,
+    password: ''
+  });
+  this.form.markAsUntouched();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+cancelEdit(): void {
+  this.editingManager = null;
+  this.registerErrorMessage = '';
+  this.form.controls['password'].enable();
+  this.formDirective.resetForm();
+}
+
+submit(): void {
+  if (this.editingManager) {
+    this.saveChanges(this.editingManager);
+  } else {
+    this.register();
+  }
+}
+
+private saveChanges(manager: UserDto): void {
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
+  }
+
+  this.registerErrorMessage = '';
+  const { firstName, lastName, email } = this.form.getRawValue();
+
+  this.managerService.updateManager(manager.id, { firstName, lastName, email }).subscribe({
+    next: () => {
+      this.toastr.success('Manager updated.');
+      this.cancelEdit();
+      this.loadManagers();
+    },
+    error: (err) => {
+      this.registerErrorMessage = err.error?.message ?? 'Something went wrong. Please try again.';
+    }
+  });
+}
 }

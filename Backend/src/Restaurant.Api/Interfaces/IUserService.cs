@@ -20,5 +20,6 @@ namespace Restaurant.Api.Interfaces
         Task<UserDto?> GetProfileAsync(int userId);
         Task<(bool Success, string? Error)> ChangePasswordAsync(int userId, ChangePasswordRequest request);
 
+        Task<(string? Error, int StatusCode)> DeactivateOwnAccountAsync (int userId, DeactivateAccountRequest request); 
     }
 }

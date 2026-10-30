@@ -19,7 +19,7 @@ export interface RegisterRequest {
 export interface LoginResponse {
  accessToken: string;
  refreshToken: string;
- expiresAt: number;
+ expiresAt: string;
  firstName: string;
  lastName: string;
  role: Role;

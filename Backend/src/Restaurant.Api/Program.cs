@@ -9,12 +9,33 @@ using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using Restaurant.Api.Models;
 using Restaurant.Api.Hubs;
+using Restaurant.Api.Workers;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Mvc;
+using Restaurant.Api.DTOs;
+using Restaurant.Api.Infrastructure;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value != null && e.Value.Errors.Count > 0)
+                .ToDictionary(
+                    e => e.Key,
+                    e => e.Value!.Errors.Select(x => x.ErrorMessage).ToArray());
+
+            var message = errors.Values.First().First();
+
+            return new BadRequestObjectResult(ApiError.Create(context.HttpContext, StatusCodes.Status400BadRequest, message, errors));
+        };
+    })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -34,6 +55,14 @@ builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IForecastService, ForecastService>();
+
+builder.Services.AddHostedService<DailyStatisticsWorker>();
+builder.Services.AddHostedService<ReservationLifecycleWorker>();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.Configure<ReservationOptions>(builder.Configuration.GetSection("Reservations"));
 builder.Services.AddSingleton(TimeProvider.System);
@@ -73,6 +102,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("pin-login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -100,7 +144,11 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    options.MapType<DateOnly>(() => new OpenApiSchema { Type = "string", Format = "date" });
 });
+
+
 
 builder.Services.AddCors(options =>
 {
@@ -113,6 +161,26 @@ builder.Services.AddCors(options =>
     });
 });
 var app = builder.Build();
+
+app.UseExceptionHandler();
+
+app.UseStatusCodePages(async context =>
+{
+    var httpContext = context.HttpContext;
+    var status = httpContext.Response.StatusCode;
+
+    var message = status switch
+    {
+        StatusCodes.Status401Unauthorized => "You must be signed in to do this.",
+        StatusCodes.Status403Forbidden => "You are not allowed to do this.",
+        StatusCodes.Status404NotFound => "The requested resource was not found.",
+        StatusCodes.Status429TooManyRequests => "Too many requests. Please try again later.",
+        _ => "The request could not be completed."
+    };
+
+    await httpContext.Response.WriteAsJsonAsync(ApiError.Create(httpContext, status, message));
+});
+
 
 using (var scope = app.Services.CreateScope())
 {
@@ -127,6 +195,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCors("Frontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

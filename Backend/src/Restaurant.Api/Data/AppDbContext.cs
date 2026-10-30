@@ -11,6 +11,7 @@ namespace Restaurant.Api.Data
         
             public DbSet<User> Users => Set<User>();
             public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
             public DbSet<RestaurantTable> RestaurantTables => Set<RestaurantTable>();
             public DbSet<MenuItem> MenuItems => Set<MenuItem>();
             public DbSet<Reservation> Reservations => Set<Reservation>();
@@ -20,6 +21,11 @@ namespace Restaurant.Api.Data
             public DbSet<OrderItem> OrderItems => Set<OrderItem>();
             public DbSet<Invoice> Invoices => Set<Invoice>();
             public DbSet<Review> Reviews => Set<Review>();
+
+            public DbSet<DailyStatistic> DailyStatistics => Set<DailyStatistic>();
+            public DbSet<Prediction> Predictions => Set<Prediction>();
+
+            public DbSet<PinLoginAttempt> PinLoginAttempts => Set<PinLoginAttempt>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -227,6 +233,49 @@ namespace Restaurant.Api.Data
                 });
             });
 
+
+            modelBuilder.Entity<DailyStatistic>(e =>
+            {
+                e.Property(d => d.Revenue).HasPrecision(10, 2);
+                e.HasIndex(d => d.Date).IsUnique();
+
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_DailyStatistics_Counts", "[ReservationCount] >= 0 AND [GuestCount] >= 0" +
+                        " AND [OrderCount] >= 0 AND [NoShowCount] >= 0");
+                    t.HasCheckConstraint("CK_DailyStatistics_Revenue", "[Revenue] >= 0");
+                    t.HasCheckConstraint("CK_DailyStatistics_NoShow", "[NoShowCount] <= [ReservationCount]");
+                });
+
+            });
+
+            modelBuilder.Entity<Prediction>(e =>
+            {
+                e.Property(p => p.Model).HasConversion<string>().HasMaxLength(30);
+                e.Property(p => p.ExpectedGuests).HasPrecision(8, 2);
+
+                e.HasIndex(p => new {p.Date,p.Model}).IsUnique();
+
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_Predictions_ExpectedGuests", "[ExpectedGuests] >= 0");
+
+
+                });
+
+            });
+
+            modelBuilder.Entity<PinLoginAttempt>(e =>
+            {
+                e.Property(a => a.ClientKey).HasMaxLength(64);
+                e.HasIndex( a => a.ClientKey ).IsUnique();
+
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_PinLoginAttempts_FailedCount", "[FailedCount] >= 0 ");
+                });
+
+            });
 
 
         }

@@ -9,5 +9,8 @@ namespace Restaurant.Api.DTOs
 
         [Required]
         public string RowVersion { get; set; } = string.Empty;
+
+        public int? TableId { get; set; }
+                                         
     }
 }

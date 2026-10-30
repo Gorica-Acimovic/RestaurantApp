@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Api.DTOs;
+using Restaurant.Api.Infrastructure;
 using Restaurant.Api.Interfaces;
 using System.Security.Claims;
 
@@ -9,7 +10,7 @@ namespace Restaurant.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ReservationsController : ControllerBase
+    public class ReservationsController : ApiControllerBase
     {
         private readonly IReservationService _reservationService;
 
@@ -27,7 +28,7 @@ namespace Restaurant.Api.Controllers
 
             int? userId = null;
             var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (claim is not null)
+            if (claim is not null && User.IsInRole("Guest"))
             {
                 userId = int.Parse(claim);
             }
@@ -35,10 +36,10 @@ namespace Restaurant.Api.Controllers
             var (reservation, error, conflict) = await _reservationService.CreateReservationAsync(request, userId);
 
             if (conflict)
-                return Conflict(new { message = error });
+                return Error(409, error);
 
             if (error is not null)
-                return BadRequest(new { message = error });
+                return Error(400, error);
 
             return Ok(reservation);
         }
@@ -64,7 +65,7 @@ namespace Restaurant.Api.Controllers
             var (reservation, error, statusCode) = await _reservationService.ChangeStatusAsync(id, request, userId, isStaff);
 
             if (error is not null)
-                return StatusCode(statusCode, new { message = error });
+                return Error(statusCode, error);
 
             return Ok(reservation);
         }
@@ -76,6 +77,31 @@ namespace Restaurant.Api.Controllers
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var reservations = await _reservationService.GetMyReservationsAsync(userId);
             return Ok(reservations);
+        }
+
+        [HttpGet("availability")]
+        [AllowAnonymous]
+
+        public async Task<IActionResult> GetAvailability([FromQuery] DateTime startsAt, [FromQuery] int guestNumber)
+        {
+            var(tables,error) = await _reservationService.GetAvailableTablesAsync(startsAt, guestNumber);
+
+            if (error is not null)
+                return Error(400, error);
+
+            return Ok(tables);
+        }
+
+        [HttpGet("{id}/suggested-table")]
+        [Authorize(Roles = "Manager, Admin, Waiter")]
+        public async Task<IActionResult> GetSuggestedTable(int id)
+        {
+            var (table, error, statusCode) = await _reservationService.SuggestTableAsync(id);
+
+            if (error is not null)
+                return Error(statusCode, error);
+
+            return Ok(table);
         }
     }
 }

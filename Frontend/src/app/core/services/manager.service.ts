@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {API_URL} from '../api-config';
-import { UserDto } from '../models/user.models';
+import { UpdateManagerRequest, UserDto } from '../models/user.models';
 import { RegisterRequest } from '../models/auth.models';
 
 @Injectable({
@@ -23,6 +23,10 @@ export class ManagerService {
 setActive(id: number, isActive: boolean): Observable<void> {
   const action = isActive ? 'activate' : 'deactivate';
   return this.http.put<void>(`${API_URL}/managers/${id}/${action}`, {});
+}
+
+updateManager(id: number, request: UpdateManagerRequest): Observable<void> {
+  return this.http.put<void>(`${API_URL}/managers/${id}`, request);
 }
 
 }

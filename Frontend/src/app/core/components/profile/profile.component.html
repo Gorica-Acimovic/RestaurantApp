@@ -1,0 +1,106 @@
+<h2 class="page-title">My profile</h2>
+
+@if (errorMessage) {
+  <p class="form-error">{{ errorMessage }}</p>
+}
+
+@if (profile) {
+  <div class="panel">
+    <h3>Account</h3>
+
+    <dl class="profile-data">
+      <dt>Name</dt>
+      <dd>{{ profile.firstName }} {{ profile.lastName }}</dd>
+
+      <dt>Email</dt>
+      <dd>{{ profile.email }}</dd>
+
+      <dt>Role</dt>
+      <dd>{{ profile.role }}</dd>
+
+      <dt>Status</dt>
+      <dd>
+        <span [class.status-active]="profile.isActive" [class.status-inactive]="!profile.isActive">
+          {{ profile.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </dd>
+    </dl>
+  </div>
+}
+
+@if (canChangePassword) {
+  <div class="panel">
+    <h3>Change password</h3>
+
+    <form [formGroup]="passwordForm" #passwordDirective="ngForm" (ngSubmit)="changePassword(passwordDirective)">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Current password</mat-label>
+        <input matInput type="password" formControlName="currentPassword" />
+        <mat-error>Current password is required.</mat-error>
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>New password</mat-label>
+          <input matInput type="password" formControlName="newPassword" />
+          <mat-hint>6+ characters: uppercase, lowercase, number, special character</mat-hint>
+          @if (passwordForm.controls['newPassword'].hasError('required')) {
+            <mat-error>New password is required.</mat-error>
+          } @else if (passwordForm.controls['newPassword'].hasError('pattern')) {
+            <mat-error>Password does not meet the rules.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Repeat new password</mat-label>
+          <input matInput type="password" formControlName="confirmPassword" />
+          <mat-error>Please repeat the new password.</mat-error>
+        </mat-form-field>
+      </div>
+
+      @if (passwordForm.hasError('mismatch') && passwordForm.controls['confirmPassword'].dirty) {
+        <p class="form-error">Passwords do not match.</p>
+      }
+
+      @if (passwordError) {
+        <p class="form-error">{{ passwordError }}</p>
+      }
+
+      <button type="submit" class="button primary">Change password</button>
+    </form>
+  </div>
+} @else {
+  <div class="panel">
+    <h3>Password</h3>
+    <p class="hint">Waiters sign in with a PIN, so there is no password to change. Ask your manager if the PIN needs to be changed.</p>
+  </div>
+}
+
+@if (canDeactivate) {
+  <div class="panel danger-panel">
+    <h3>Deactivate account</h3>
+
+    @if (role === 'Guest') {
+      <p class="hint">Your upcoming reservations will be cancelled and you will not be able to sign in again.</p>
+    } @else if (role === 'Manager') {
+      <p class="hint">You will not be able to sign in. An administrator can activate your account again.</p>
+    } @else {
+      <p class="hint">
+        You will not be able to sign in with your PIN. Your manager can activate your account again.
+        Close or cancel your open orders first.
+      </p>
+    }
+
+    <mat-form-field appearance="outline" class="credential-field">
+      <mat-label>{{ isWaiter ? 'Your PIN' : 'Your password' }}</mat-label>
+      <input matInput type="password" [formControl]="credentialControl" [attr.maxlength]="isWaiter ? 4 : null" />
+      <mat-error>{{ isWaiter ? 'PIN is required.' : 'Password is required.' }}</mat-error>
+    </mat-form-field>
+
+    @if (deactivateError) {
+      <p class="form-error">{{ deactivateError }}</p>
+    }
+
+    <button type="button" class="button danger" (click)="deactivate()">Deactivate my account</button>
+  </div>
+}

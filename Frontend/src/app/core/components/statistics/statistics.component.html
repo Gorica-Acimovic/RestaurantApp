@@ -1,0 +1,101 @@
+<h2 class="page-title">Statistics</h2>
+
+<div class="filters">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>From</mat-label>
+    <input matInput type="date" [formControl]="fromControl" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>To</mat-label>
+    <input matInput type="date" [formControl]="toControl" />
+  </mat-form-field>
+
+  <button type="button" class="button primary small" (click)="load()">Show</button>
+  <button type="button" class="button outline small" (click)="setPreset(30)">Last 30 days</button>
+  <button type="button" class="button outline small" (click)="setPreset(90)">Last 90 days</button>
+  <button type="button" class="button outline small" (click)="setPreset(180)">Last 180 days</button>
+</div>
+
+@if (errorMessage) {
+  <p class="form-error">{{ errorMessage }}</p>
+}
+
+@if (summary) {
+  <p class="period">
+    {{ summary.from }} to {{ summary.to }} ({{ summary.days }} days)
+  </p>
+
+  @if (summary.containsSynthetic) {
+    <p class="note">This period contains generated (synthetic) days.</p>
+  }
+
+  <div class="stat-cards">
+    <div class="stat-card">
+      <span class="stat-label">Guests</span>
+      <span class="stat-value">{{ summary.totalGuests | number }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Orders</span>
+      <span class="stat-value">{{ summary.totalOrders | number }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Revenue</span>
+      <span class="stat-value">{{ summary.totalRevenue | number: '1.0-0' }} {{ currency }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Reservations</span>
+      <span class="stat-value">{{ summary.totalReservations | number }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">No-shows</span>
+      <span class="stat-value">{{ summary.noShowPercent | number: '1.1-1' }}%</span>
+      <span class="stat-sub">{{ summary.noShowCount }} reservations</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Guests per day</h3>
+    <div class="chart-box">
+      <canvas baseChart [data]="dailyChart" [options]="lineOptions" [type]="'line'"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="panel">
+      <h3>Busiest days</h3>
+      <div class="chart-box">
+        <canvas baseChart [data]="weekdayChart" [options]="horizontalBarOptions" [type]="'bar'"></canvas>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Busiest hours</h3>
+      @if (summary.hours.length === 0) {
+        <p class="empty">No closed orders in this period.</p>
+      } @else {
+        <div class="chart-box">
+          <canvas baseChart [data]="hourChart" [options]="barOptions" [type]="'bar'"></canvas>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Best sellers</h3>
+    @if (summary.topItems.length === 0) {
+      <p class="empty">No items sold in this period.</p>
+    } @else {
+      <ol class="top-items">
+        @for (item of summary.topItems; track item.menuItemId) {
+          <li>
+            <span class="item-name">{{ item.name }}</span>
+            <span class="item-quantity">{{ item.quantity }} sold</span>
+            <span class="item-revenue">{{ item.revenue | number: '1.2-2' }} {{ currency }}</span>
+          </li>
+        }
+      </ol>
+    }
+  </div>
+}
+<app-forecast></app-forecast>

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Api.DTOs;
+using Restaurant.Api.Infrastructure;
 using Restaurant.Api.Interfaces;
 using System.Security.Claims;
 
@@ -10,7 +11,7 @@ namespace Restaurant.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Waiter,Manager,Admin")]
-    public class OrdersController : ControllerBase
+    public class OrdersController :  ApiControllerBase
     {
         private readonly IOrderService _orderService;
 
@@ -26,7 +27,7 @@ namespace Restaurant.Api.Controllers
 
             var (order, error, statusCode) = await _orderService.OpenOrderAsync(request, waiterId);
             if (error is not null)
-                return StatusCode(statusCode, new { message = error });
+                return Error(statusCode, error);
 
             return Ok(order);
         }
@@ -36,7 +37,7 @@ namespace Restaurant.Api.Controllers
         {
             var order = await _orderService.GetOpenOrderForTableAsync(tableId);
             if (order == null)
-                return NotFound(new { message = "No open order for this table." });
+                return Error(404, "No open order for this table.");
 
             return Ok(order);
         }
@@ -46,7 +47,7 @@ namespace Restaurant.Api.Controllers
         {
             var (order, error, statusCode) = await _orderService.AddItemAsync(id, request);
             if (error is not null)
-                return StatusCode(statusCode, new { message = error });
+                return Error(statusCode, error);
 
             return Ok(order);
         }
@@ -56,7 +57,7 @@ namespace Restaurant.Api.Controllers
         {
             var (order, error, statusCode) = await _orderService.UpdateItemAsync(id, itemId, request);
             if (error is not null)
-                return StatusCode(statusCode, new { message = error });
+                return Error(statusCode, error);
 
             return Ok(order);
         }
@@ -66,7 +67,7 @@ namespace Restaurant.Api.Controllers
         {
             var (order, error, statusCode) = await _orderService.RemoveItemAsync(id, itemId);
             if (error is not null)
-                return StatusCode(statusCode, new { message = error });
+                return Error(statusCode, error);
 
             return Ok(order);
         }
@@ -76,7 +77,7 @@ namespace Restaurant.Api.Controllers
         {
             var (invoice, error, statusCode) = await _orderService.CloseOrderAsync(id, request);
             if (error is not null)
-                return StatusCode(statusCode, new { message = error });
+                return Error(statusCode, error);
 
             return Ok(invoice);
         }
@@ -85,8 +86,8 @@ namespace Restaurant.Api.Controllers
         public async Task<IActionResult> CancelOrder(int id)
         {
             var (error, statusCode) = await _orderService.CancelOrderAsync(id);
-            if (error is not null)
-                return StatusCode(statusCode, new { message = error });
+                if (error is not null)
+                    return Error(statusCode, error);
 
             return NoContent();
         }
@@ -96,7 +97,7 @@ namespace Restaurant.Api.Controllers
         {
             var invoice = await _orderService.GetInvoiceAsync(id);
             if (invoice == null)
-                return NotFound(new { message = "Invoice not found." });
+                return Error(404, "Invoice not found.");
 
             return Ok(invoice);
         }

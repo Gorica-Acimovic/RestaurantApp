@@ -27,6 +27,7 @@ export class WaitersComponent implements OnInit {
   errorMessage = '';
   registerError = '';
   form: FormGroup;
+  editingWaiter: UserDto | null = null;
 
   constructor(private waiterService: WaiterService, private formBuilder: FormBuilder, private toastr: ToastrService) { 
     this.form = this.formBuilder.group({
@@ -84,7 +85,64 @@ export class WaitersComponent implements OnInit {
       }
     });
   }
+startEdit(waiter: UserDto): void {
+  this.editingWaiter = waiter;
+  this.registerError = '';
 
+  this.form.setValue({
+    firstName: waiter.firstName,
+    lastName: waiter.lastName,
+    email: waiter.email,
+    pin: ''
+  });
+  this.form.markAsUntouched();
+  this.setPinRequired(false);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+cancelEdit(): void {
+  this.editingWaiter = null;
+  this.registerError = '';
+  this.formDirective.resetForm();
+  this.setPinRequired(true);
+}
+
+submit(): void {
+  if (this.editingWaiter) {
+    this.saveChanges(this.editingWaiter);
+  } else {
+    this.register();
+  }
+}
+
+private saveChanges(waiter: UserDto): void {
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
+  }
+
+  this.registerError = '';
+  const { firstName, lastName, email, pin } = this.form.getRawValue();
+
+  this.waiterService.updateWaiter(waiter.id, { firstName, lastName, email, pin: pin || null }).subscribe({
+    next: () => {
+      this.toastr.success('Waiter updated.');
+      this.cancelEdit();
+      this.loadWaiters();
+    },
+    error: (err) => {
+      this.registerError = err.error?.message ?? 'Something went wrong. Please try again.';
+    }
+  });
+}
+  private setPinRequired(required: boolean): void {
+  const control = this.form.controls['pin'];
+  const pattern = Validators.pattern(/^\d{4}$/);
+
+  control.setValidators(required ? [Validators.required, pattern] : [pattern]);
+  control.updateValueAndValidity();
+}
 
 
 

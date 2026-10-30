@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { RegisterWaiterRequest, UserDto } from '../models/user.models';
+import { RegisterWaiterRequest, UpdateWaiterRequest, UserDto } from '../models/user.models';
 import { Observable } from 'rxjs';
 import { API_URL } from '../api-config';
 
@@ -22,5 +22,8 @@ getAllWaiters(): Observable<UserDto[]> {
 setActive(id: number, isActive: boolean): Observable<void> {
   const action = isActive ? 'activate' : 'deactivate';
   return this.http.put<void>(`${API_URL}/waiters/${id}/${action}`, {});
+}
+updateWaiter(id: number, request: UpdateWaiterRequest): Observable<void> {
+  return this.http.put<void>(`${API_URL}/waiters/${id}`, request);
 }
 }

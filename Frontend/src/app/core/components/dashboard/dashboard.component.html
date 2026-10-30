@@ -12,6 +12,10 @@
       <a routerLink="/dashboard/reviews" routerLinkActive="active">Reviews</a>
     }
 
+    @if (session?.role === 'Admin' || session?.role === 'Manager') {
+      <a routerLink="/dashboard/statistics" routerLinkActive="active">Statistics</a>
+    }
+
     @if (session?.role !== 'Guest') {
       <a routerLink="/dashboard/tables" routerLinkActive="active">Hall</a>
       <a routerLink="/dashboard/reservations" routerLinkActive="active">Reservations</a>
@@ -20,7 +24,7 @@
     @if (session?.role === 'Guest') {
       <a routerLink="/dashboard/my-reservations" routerLinkActive="active">My reservations</a>
     }
-
+    <a routerLink="/dashboard/profile" routerLinkActive="active">Profile</a>
     <span class="user">{{ session?.firstName }} {{ session?.lastName }} ({{ session?.role }})</span>
     <button type="button" (click)="logout()">Log out</button>
   </div>

@@ -24,6 +24,54 @@ namespace Restaurant.Api.Migrations
 
             modelBuilder.HasSequence<int>("InvoiceNumbers");
 
+            modelBuilder.Entity("Restaurant.Api.Models.DailyStatistic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GuestCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsSynthetic")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("NoShowCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReservationCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Revenue")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .IsUnique();
+
+                    b.ToTable("DailyStatistics", t =>
+                        {
+                            t.HasCheckConstraint("CK_DailyStatistics_Counts", "[ReservationCount] >= 0 AND [GuestCount] >= 0 AND [OrderCount] >= 0 AND [NoShowCount] >= 0");
+
+                            t.HasCheckConstraint("CK_DailyStatistics_NoShow", "[NoShowCount] <= [ReservationCount]");
+
+                            t.HasCheckConstraint("CK_DailyStatistics_Revenue", "[Revenue] >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Restaurant.Api.Models.Invoice", b =>
                 {
                     b.Property<int>("Id")
@@ -286,6 +334,73 @@ namespace Restaurant.Api.Migrations
                             t.HasCheckConstraint("CK_OrderItems_Quantity", "[Quantity] >= 1");
 
                             t.HasCheckConstraint("CK_OrderItems_UnitPrice", "[UnitPrice] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Restaurant.Api.Models.PinLoginAttempt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("BlockedUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ClientKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("FailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastAttemptAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientKey")
+                        .IsUnique();
+
+                    b.ToTable("PinLoginAttempts", t =>
+                        {
+                            t.HasCheckConstraint("CK_PinLoginAttempts_FailedCount", "[FailedCount] >= 0 ");
+                        });
+                });
+
+            modelBuilder.Entity("Restaurant.Api.Models.Prediction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("ExpectedGuests")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date", "Model")
+                        .IsUnique();
+
+                    b.ToTable("Predictions", t =>
+                        {
+                            t.HasCheckConstraint("CK_Predictions_ExpectedGuests", "[ExpectedGuests] >= 0");
                         });
                 });
 

@@ -14,3 +14,72 @@ small {
 .empty {
   color: var(--muted);
 }
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.hall {
+  width: 100%;
+  max-width: 900px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  touch-action: none;
+  user-select: none;
+}
+
+.hall-floor {
+  fill: var(--surface);
+}
+
+.table circle {
+  stroke: var(--bg);
+  stroke-width: 0.4;
+}
+
+.dot.free, .table circle.free { background: #4caf50; fill: #4caf50; }
+.dot.taken, .table circle.taken { background: #e53935; fill: #e53935; }
+.dot.chosen, .table circle.chosen { background: #00bcd4; fill: #00bcd4; }
+
+.table { cursor: pointer; }
+.table.disabled { cursor: not-allowed; opacity: 0.6; }
+.table circle.chosen { stroke: #fff; stroke-width: 0.8; }
+
+.confirm-panel { margin-bottom: 24px; }
+
+.table-number {
+  font-size: 5px;
+  font-weight: bold;
+  fill: var(--bg);
+  pointer-events: none;
+}
+
+.table-capacity {
+  font-size: 3px;
+  fill: var(--muted);
+  pointer-events: none;
+}
+
+.hint {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+.form-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}

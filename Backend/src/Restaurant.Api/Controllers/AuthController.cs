@@ -2,12 +2,15 @@
 using Restaurant.Api.DTOs;
 using Restaurant.Api.Services;
 using Restaurant.Api.Interfaces;
+using Microsoft.AspNetCore.RateLimiting;
+using Restaurant.Api.Infrastructure;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Restaurant.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController :  ApiControllerBase
     {
         private readonly IAuthService _auth;
 
@@ -21,7 +24,7 @@ namespace Restaurant.Api.Controllers
         {
             var result = await _auth.LoginAsync(request);
             if (result is null)
-                return Unauthorized(new { message = "Invalid email or password." });
+                return Error(401, "Invalid email or password.");
 
             return Ok(result);
         }
@@ -31,7 +34,7 @@ namespace Restaurant.Api.Controllers
         {
             var result = await _auth.RegisterAsync(request);
             if (result is null)
-                return BadRequest(new { message = "Email already exists." });
+                return Error(400, "Email already exists.");
 
             return Ok(result);
         }
@@ -41,7 +44,7 @@ namespace Restaurant.Api.Controllers
         {
             var result = await _auth.RefreshAsync(request.RefreshToken);
             if (result is null)
-                return Unauthorized(new { message = "Refresh token is not valid." });
+                return Error(401, "Refresh token is not valid.");
 
             return Ok(result);
         }
@@ -53,13 +56,18 @@ namespace Restaurant.Api.Controllers
             return NoContent();
         }
 
+        [EnableRateLimiting("pin-login")]
         [HttpPost("pin-login")]
 
         public async Task<IActionResult> LoginWithPin(PinLoginRequest request)
         {
-            var result = await _auth.PinLoginAsync(request);
-            if (result is null)
-                return Unauthorized(new { message = "Invalid pin." });
+            var clientKey = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            
+            var (result, error, statusCode) = await _auth.PinLoginAsync(request, clientKey);
+
+            if (error is not null)
+                return Error(statusCode, error);
+
 
             return Ok(result);
         }   

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Api.DTOs;
+using Restaurant.Api.Infrastructure;
 using Restaurant.Api.Interfaces;
 using System.Security.Claims;
 
@@ -9,7 +10,7 @@ namespace Restaurant.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ReviewsController : ControllerBase
+    public class ReviewsController : ApiControllerBase
     {
         private readonly IReviewService _reviewService;
 
@@ -27,7 +28,7 @@ namespace Restaurant.Api.Controllers
 
             var (review, error, statusCode) = await _reviewService.CreateReviewAsync(request, userId);
             if (error is not null)
-                return StatusCode(statusCode, new { message = error });
+                return Error(statusCode, error);
 
             return Ok(review);
         }
@@ -57,7 +58,7 @@ namespace Restaurant.Api.Controllers
 
             var (review, error, statusCode) = await _reviewService.RespondAsync(id, request, managerId);
             if (error is not null)
-                return StatusCode(statusCode, new { message = error });
+                    return Error(statusCode, error);
 
             return Ok(review);
         }

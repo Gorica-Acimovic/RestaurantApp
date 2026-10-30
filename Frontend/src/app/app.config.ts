@@ -6,6 +6,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { authInterceptor } from './core/interceptors/auth.interceptors';
 import { provideToastr } from 'ngx-toastr';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 
 export const appConfig: ApplicationConfig = {
@@ -14,6 +15,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes), 
     provideHttpClient(withInterceptors([authInterceptor])), 
     provideAnimationsAsync(),
-    provideToastr()
+    provideToastr(),
+    provideCharts(withDefaultRegisterables())
   ],
 };

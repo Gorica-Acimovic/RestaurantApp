@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Api.DTOs;
+using Restaurant.Api.Infrastructure;
 using Restaurant.Api.Interfaces;
 using Restaurant.Api.Models;
 using System.Security.Claims;
@@ -12,7 +13,7 @@ namespace Restaurant.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Admin")]
-    public class ManagersController : ControllerBase
+    public class ManagersController : ApiControllerBase
     {
         private readonly IUserService _userService;
 
@@ -29,7 +30,7 @@ namespace Restaurant.Api.Controllers
 
             var result = await _userService.RegisterManagerAsync(request, adminId);
             if (result is null)
-                return Conflict(new { message = "Email is already in use." });
+                return Error(409, "Email is already in use.");
 
             return Ok(result);
         }
@@ -52,7 +53,7 @@ namespace Restaurant.Api.Controllers
             var result = await _userService.SetManagersProfileStatus(managerId, adminId, true);
 
             if (!result)
-                return NotFound(new { message = "Manager is not found or you don't have permission to activate this manager." });
+                return Error(404, "Manager is not found or you don't have permission to activate this manager.");
 
             return NoContent();
         }
@@ -65,7 +66,7 @@ namespace Restaurant.Api.Controllers
             var result = await _userService.SetManagersProfileStatus(managerId, adminId, false);
 
             if (!result)
-                return NotFound(new { message = "Manager is not found or you don't have permission to deactivate this manager." });
+                return Error(404, "Manager is not found or you don't have permission to deactivate this manager.");
 
             return NoContent();
         }
@@ -78,10 +79,10 @@ namespace Restaurant.Api.Controllers
             var (found, error) = await _userService.UpdateManagerAsync(managerId, adminId, request);
 
             if (!found)
-                return NotFound(new { message = "Manager not found." });
+                return Error(404, "Manager not found.");
 
             if (error is not null)
-                return Conflict(new { message = error });
+                return Error(409, error);
 
             return NoContent();
         }

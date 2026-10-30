@@ -17,5 +17,7 @@ namespace Restaurant.Api.DTOs
         [Range(1,50)]
         public int NumberOfGuests { get; set; }
 
+        public int? TableId { get; set; }
+
     }
 }

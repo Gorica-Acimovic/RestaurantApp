@@ -16,6 +16,8 @@ import { OrderComponent } from './core/components/order/order.component';
 import { HomeComponent } from './core/components/home/home.component';
 import { MyReservationsComponent } from './core/components/my-reservations/my-reservations.component';
 import { ReviewsComponent } from './core/components/reviews/reviews.component';
+import { StatisticsComponent } from './core/components/statistics/statistics.component';
+import { ProfileComponent } from './core/components/profile/profile.component';
 
 export const routes: Routes = [
 
@@ -38,6 +40,8 @@ export const routes: Routes = [
         { path: 'orders/:tableId', component: OrderComponent, canActivate: [roleGuard('Admin', 'Manager', 'Waiter')] },
         { path: 'my-reservations', component: MyReservationsComponent, canActivate: [roleGuard('Guest')] },
         { path: 'reviews', component: ReviewsComponent, canActivate: [roleGuard('Manager')] },
+        { path: 'statistics', component: StatisticsComponent, canActivate: [roleGuard('Admin', 'Manager')] },
+        { path: 'profile', component: ProfileComponent },
      ]
     }
 ];

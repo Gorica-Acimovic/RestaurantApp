@@ -3,6 +3,7 @@ using Restaurant.Api.Data;
 using Restaurant.Api.DTOs;
 using Restaurant.Api.Interfaces;
 using Restaurant.Api.Models;
+using Microsoft.Data.SqlClient;
 
 namespace Restaurant.Api.Services
 {
@@ -10,11 +11,12 @@ namespace Restaurant.Api.Services
     {
         private readonly AppDbContext _db;
         private readonly IPinHasher _pinHasher;
-
-        public UserService(AppDbContext db, IPinHasher pinHasher)
+        private readonly TimeProvider _timeProvider;
+        public UserService(AppDbContext db, IPinHasher pinHasher, TimeProvider timeProvider)
         {
             _db = db;
             _pinHasher = pinHasher;
+            _timeProvider = timeProvider;
         }
 
         public async Task<(bool Success, string? Error)> ChangePasswordAsync(int userId, ChangePasswordRequest request)
@@ -113,7 +115,21 @@ namespace Restaurant.Api.Services
             };
 
             _db.Users.Add(user);
-            await _db.SaveChangesAsync();
+
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                if(GetDuplicateKeyError (ex) is null)
+                {
+                    throw;
+                }
+
+                return null;
+            }
 
             return new UserDto
             {
@@ -153,7 +169,23 @@ namespace Restaurant.Api.Services
                 RegisteredById = managerId
             };
             _db.Users.Add(user);
-            await _db.SaveChangesAsync();
+
+            try
+            {
+                await _db.SaveChangesAsync();
+
+            }
+            catch (DbUpdateException ex)
+            {
+                var error = GetDuplicateKeyError(ex);
+                if( error is null)
+                {
+                    throw;
+                }
+                return (null,error);
+            }
+
+
 
            var dto = new UserDto
             {
@@ -202,7 +234,23 @@ namespace Restaurant.Api.Services
             }
 
             waiter.IsActive = isActive;
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+
+            }
+            catch (DbUpdateException ex)
+            {
+                var error = GetDuplicateKeyError(ex);
+                if (error is null)
+                {
+                    throw;
+                }
+
+                return (true, error);
+            }
+
+            
             return (true, null);
         }
 
@@ -225,7 +273,21 @@ namespace Restaurant.Api.Services
             manager.FirstName = request.FirstName;
             manager.LastName = request.LastName;
             manager.Email = request.Email;
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+
+            }
+            catch (DbUpdateException ex)
+            {
+                var error = GetDuplicateKeyError(ex);
+                if (error is null)
+                {
+                    throw;
+                }
+
+                return (true, error);
+            }
             return (true, null);
 
         }
@@ -264,8 +326,92 @@ namespace Restaurant.Api.Services
             waiter.LastName = request.LastName;
             waiter.Email = request.Email;
 
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+
+            }
+            catch (DbUpdateException ex)
+            {
+                var error = GetDuplicateKeyError(ex);
+                if (error is null)
+                {
+                    throw;
+                }
+
+                return (true, error);
+            }
             return (true, null);
         }
+
+
+        private static string? GetDuplicateKeyError (DbUpdateException exception)
+        {
+            if (exception.InnerException is SqlException { Number: 2601 or 2627} sqlException)
+            {
+                return sqlException.Message.Contains("PinHash") ? "PIN is already in use. Choose another one." : " Email is already in use.";
+            }
+
+            return null;
+        }
+
+        public async Task<(string? Error, int StatusCode)> DeactivateOwnAccountAsync(int userId, DeactivateAccountRequest request)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
+            if (user == null)
+            {
+                return ("User not found", 404);
+            }
+
+            if(user.Role == Role.Admin)
+            {
+                return ("Administrators cannot deactivate their own accounts.", 403);
+            }
+
+            if(user.Role == Role.Waiter)
+            {
+                if(string.IsNullOrEmpty(request.Pin) || _pinHasher.HashPin(request.Pin) != user.PinHash)
+                {
+                    return ("Pin is incorrect.", 400);
+                }
+
+                var hasOpenOrders = await _db.Orders.AnyAsync(o => o.WaiterId == userId && o.Status == OrderStatus.Open);
+                if(hasOpenOrders)
+                {
+                    return ("You have open orders, and cannot deactivate your profile. Close or cancel orders first.", 409);
+                }
+
+            }
+            else if (string.IsNullOrEmpty(request.Password) || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            {
+                return ("Password is incorrect!", 400);
+            }
+            user.IsActive = false;
+
+            var tokens = await _db.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync();
+            foreach (var token in tokens)
+            {
+                token.IsRevoked = true;
+            }
+
+
+            if(user.Role == Role.Guest)
+            {
+                var now = _timeProvider.GetLocalNow().DateTime;
+
+                var reservations = await _db.Reservations.Where(r => r.UserId == userId && r.StartsAt > now && 
+                (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Confirmed)).ToListAsync();
+
+                foreach(var reservation in reservations)
+                {
+                    reservation.Status = ReservationStatus.Cancelled;
+                }
+            }
+
+            await _db.SaveChangesAsync();
+            return( null, 204 );
+
+        }
+        
     }
 }

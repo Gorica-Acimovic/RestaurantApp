@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Api.DTOs;
+using Restaurant.Api.Infrastructure;
 using Restaurant.Api.Interfaces;
 
 namespace Restaurant.Api.Controllers
@@ -9,7 +10,7 @@ namespace Restaurant.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Manager,Admin,Waiter")]
-    public class RestaurantTablesController : ControllerBase
+    public class RestaurantTablesController : ApiControllerBase
     {
         private readonly ITableService _tableService;
 
@@ -33,7 +34,7 @@ namespace Restaurant.Api.Controllers
             var (table, error) = await _tableService.CreateTableAsync(request);
             if(error is not null)
             {
-                return Conflict(new { message = error });
+                return Error(409, error);
             }
             return Ok(table);
 
@@ -46,7 +47,7 @@ namespace Restaurant.Api.Controllers
             var table = await _tableService.DeleteTableAsync(id);
             if(!table)
             {
-                return NotFound(new { message = "Table not found." });
+                return Error(404, "Table not found.");
             }
             return NoContent();
         }
@@ -57,10 +58,10 @@ namespace Restaurant.Api.Controllers
         {
             var (found, error) = await _tableService.UpdateTableAsync(id, request);
             if (!found)
-                return NotFound(new { message = "Table not found." });
+                return Error(404, "Table not found.");
 
             if (error is not null)
-                return Conflict(new { message = error });
+                return Error(409, error);
 
             return NoContent();
         }
@@ -71,7 +72,7 @@ namespace Restaurant.Api.Controllers
         {
             var found = await _tableService.UpdatePositionOfTableAsync(id, request);
             if (!found)
-                return NotFound(new { message = "Table not found." });
+                return Error(404, "Table not found.");
 
             return NoContent();
         }
@@ -81,10 +82,10 @@ namespace Restaurant.Api.Controllers
         {
             var (found, error) = await _tableService.UpdateStatusAsync(id, request);
             if (!found)
-                return NotFound(new { message = "Table not found." });
+                return Error(404, "Table not found.");
 
             if (error is not null)
-                return Conflict(new { message = error });
+                return Error(409, error);
 
             return NoContent();
         }

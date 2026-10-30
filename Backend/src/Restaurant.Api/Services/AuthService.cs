@@ -3,6 +3,7 @@ using Restaurant.Api.Data;
 using Restaurant.Api.DTOs;
 using Restaurant.Api.Interfaces;
 using Restaurant.Api.Models;
+using Microsoft.Data.SqlClient;
 
 namespace Restaurant.Api.Services
 {
@@ -12,13 +13,15 @@ namespace Restaurant.Api.Services
         private readonly ITokenService _tokens;
         private readonly IConfiguration _config;
         private readonly IPinHasher _pinHasher;
+        private readonly TimeProvider _timeProvider;
 
-        public AuthService(AppDbContext db, ITokenService tokens, IConfiguration config, IPinHasher pinHasher)
+        public AuthService(AppDbContext db, ITokenService tokens, IConfiguration config, IPinHasher pinHasher, TimeProvider timeProvider)
         {
             _db = db;
             _tokens = tokens;
             _config = config;   
             _pinHasher = pinHasher;
+            _timeProvider = timeProvider;
         }
 
         public async Task<LoginResponse?> LoginAsync(LoginRequest request)
@@ -92,7 +95,14 @@ namespace Restaurant.Api.Services
             };
 
             _db.Users.Add(user);
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
+            {
+                return null;
+            }
             return await CreateLoginResponseAsync(user);
         }
 
@@ -127,7 +137,7 @@ namespace Restaurant.Api.Services
         public async Task<LoginResponse?> PinLoginAsync(PinLoginRequest pinLoginRequest)
         {
             var pinHash = _pinHasher.HashPin(pinLoginRequest.Pin);
-            var user = _db.Users.FirstOrDefault(u => u.PinHash == pinHash && u.IsActive && u.Role == Role.Waiter);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.PinHash == pinHash && u.IsActive && u.Role == Role.Waiter);
 
             if (user is null)
             {
@@ -136,5 +146,85 @@ namespace Restaurant.Api.Services
 
             return await CreateLoginResponseAsync(user);
         }
+
+        public async Task<(LoginResponse? Response, string? Error, int StatusCode)> PinLoginAsync(PinLoginRequest pinLoginRequest, string clientKey)
+        {
+            var maxFailed = int.Parse(_config["PinProtection:MaxFailedAttempts"]!);
+            var blockMinutes = int.Parse(_config["PinProtection:BlockMinutes"]!);
+
+            await EnsureAttemptRowAsync(clientKey);
+
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+            await _db.Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT Id FROM PinLoginAttempts WITH (UPDLOCK, ROWLOCK) WHERE ClientKey = {clientKey}"
+                );
+
+            var attempt = await _db.PinLoginAttempts.FirstAsync( a => a.ClientKey == clientKey );
+            var now = _timeProvider.GetUtcNow().UtcDateTime;
+
+            if(attempt.BlockedUntil > now)
+            {
+                var minutesLeft = (int)Math.Ceiling((attempt.BlockedUntil.Value - now).TotalMinutes);
+                return (null, $"Too many failed attempts. Try again in {minutesLeft} minute(s).", 429);
+            
+            }
+
+            var pinHash = _pinHasher.HashPin(pinLoginRequest.Pin);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.PinHash == pinHash && u.IsActive && u.Role == Role.Waiter);
+
+            attempt.LastAttemptAt = now;
+            attempt.BlockedUntil = null;
+
+            if(user is null)
+            {
+                attempt.FailedCount++;
+
+                var blocked = attempt.FailedCount >= maxFailed;
+                if(blocked)
+                {
+                    attempt.BlockedUntil = now.AddMinutes(blockMinutes);
+                    attempt.FailedCount = 0;
+                }
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                var message = blocked ? $"Invalid pin.Login is blocked for {blockMinutes} minute(s)." : "Invalid pin.";
+
+                return (null, message, 401);
+            }
+
+            attempt.FailedCount = 0;
+            await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return (await CreateLoginResponseAsync(user), null, 200);
+
+        }
+
+        private async Task EnsureAttemptRowAsync(string clientKey)
+        {
+            var exists = await _db.PinLoginAttempts.AnyAsync(a => a.ClientKey == clientKey);
+            if (exists)
+            {
+                return;
+            }
+
+            _db.PinLoginAttempts.Add(new PinLoginAttempt
+            {
+                ClientKey = clientKey,
+                LastAttemptAt = _timeProvider.GetUtcNow().UtcDateTime
+            });
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch(DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627})
+            {
+                _db.ChangeTracker.Clear();
+            }
+       
+            
+        } 
     }
 }

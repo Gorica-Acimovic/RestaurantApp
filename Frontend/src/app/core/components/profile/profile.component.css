@@ -1,0 +1,27 @@
+.profile-data {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.profile-data dt {
+  color: var(--muted);
+}
+
+.profile-data dd {
+  margin: 0;
+}
+
+.hint {
+  color: var(--muted);
+}
+
+.danger-panel {
+  border-color: var(--error);
+}
+
+.credential-field {
+  width: 100%;
+  max-width: 320px;
+}

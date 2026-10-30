@@ -46,7 +46,8 @@ form: FormGroup;
     this.authService.loginWithPin(this.form.getRawValue()).subscribe({
       next: () => this.router.navigate(['/dashboard/tables']),
       error: (err) => {
-        this.errorMessage = err.error?.message ?? 'Login failed. Please try again.';
+      this.errorMessage = err.error?.message ??
+       (err.status === 429 ? 'Too many requests. Please wait a minute and try again.' : 'Login failed. Please try again.');
       }
     });
   }
