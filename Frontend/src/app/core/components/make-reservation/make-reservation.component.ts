@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ReservationService } from '../../services/reservation.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import { ReservationDto, ReservationRequest } from '../../models/reservation.models';
 import { DatePipe } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../../services/auth.service';
+import { ProfileService } from '../../services/profile.service';
 
 @Component({
   selector: 'app-make-reservation',
@@ -20,7 +21,7 @@ import { MatButtonModule } from '@angular/material/button';
   templateUrl: './make-reservation.component.html',
   styleUrl: './make-reservation.component.css'
 })
-export class MakeReservationComponent {
+export class MakeReservationComponent implements OnInit {
 
   form:FormGroup;
   result:ReservationDto | null = null;
@@ -28,7 +29,7 @@ export class MakeReservationComponent {
   sending = false;
 
 
-public constructor(private service:ReservationService, private formBuilder:FormBuilder){
+public constructor(private service:ReservationService, private formBuilder:FormBuilder, private authService:AuthService, private profileService:ProfileService){
   this.form = this.formBuilder.group({
     customerName: ['', [Validators.required, Validators.maxLength(100)]],
     customerEmail:['',[Validators.email,Validators.maxLength(200)]],
@@ -38,6 +39,27 @@ public constructor(private service:ReservationService, private formBuilder:FormB
     numberOfGuests: [2,[Validators.required,Validators.min(1),Validators.max(50)]]
   });
 }
+  ngOnInit(): void {
+    if(this.authService.getRole() !== 'Guest') {
+      return;
+    }
+    this.fillFromProfile();
+  }
+
+private fillFromProfile() : void {
+  this.profileService.getProfile().subscribe ({
+    next: (user) => {
+      this.form.patchValue({
+        customerName: `${user.firstName} ${user.lastName}`,
+        customerEmail: user.email
+      });
+    },
+    error: () => {}
+  });
+
+}
+
+
 
 submit():void{
   if(this.form.invalid){
@@ -83,5 +105,9 @@ newReservation() :void {
     numberOfGuests:2
 
     });
+    
+    if(this.authService.getRole() === 'Guest'){
+      this.fillFromProfile();
+    }
   }
 }

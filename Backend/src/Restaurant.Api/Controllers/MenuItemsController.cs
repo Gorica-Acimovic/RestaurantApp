@@ -5,6 +5,7 @@ using Restaurant.Api.DTOs;
 using Restaurant.Api.Infrastructure;
 using Restaurant.Api.Interfaces;
 using Restaurant.Api.Models;
+using System.Security.Claims;
 
 namespace Restaurant.Api.Controllers
 {
@@ -32,9 +33,10 @@ namespace Restaurant.Api.Controllers
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> CreateMenuItem(SaveMenuItemRequest request)
         {
-            var (menuItem, error) = await _menuItemService.CreateMenuItemAsync(request);
+            var managerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var (menuItem, error) = await _menuItemService.CreateMenuItemAsync(request,managerId);
             if (error is not null)
-                return Error (400,error);
+                return Error (400, error);
 
             return Ok(menuItem);
         }
@@ -48,7 +50,7 @@ namespace Restaurant.Api.Controllers
                 return Error(404, "Menu item not found.");
 
             if (error is not null)
-                return Error (400,error);
+                return Error (400, error);
 
             return NoContent();
         }

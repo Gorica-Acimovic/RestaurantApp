@@ -16,12 +16,15 @@ namespace Restaurant.Api.Services
         private readonly AppDbContext _context;
         private readonly TimeProvider _timeProvider;
         private readonly IHubContext<RestaurantHub> _hub;
+        private readonly ILogger<OrderService> _logger;
 
-        public OrderService(AppDbContext context, TimeProvider timeProvider, IHubContext<RestaurantHub> hub)
+
+        public OrderService(AppDbContext context, TimeProvider timeProvider, IHubContext<RestaurantHub> hub, ILogger<OrderService> logger)
         {
             _context = context;
             _timeProvider = timeProvider;
             _hub = hub;
+            _logger = logger;
         }
         public async Task<(OrderDto? Order, string? Error, int StatusCode)> OpenOrderAsync(OpenOrderRequest request, int waiterId)
         {
@@ -39,6 +42,7 @@ namespace Restaurant.Api.Services
             var hasOpenOrder = await _context.Orders.AnyAsync(o => o.TableId == table.Id && o.Status == OrderStatus.Open);
             if (hasOpenOrder)
             {
+                _logger.LogWarning("Order not opened, table {TableId} already has an open order", table.Id);
                 return (null, "Table already has an open order.", 409);
             }
 
@@ -59,10 +63,14 @@ namespace Restaurant.Api.Services
             }
             catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
             {
+
+                _logger.LogWarning("Order not opened, table {TableId} already has an open order", table.Id);
                 return (null, "Table already has an open order.", 409);
             }
 
             await _hub.Clients.All.SendAsync("TablesChanged");
+            _logger.LogInformation("Order {OrderId} opened on table {TableId} by waiter {WaiterId}, {Guests} guest(s)", 
+                order.Id, table.Id, waiterId, request.NumberOfGuests);
 
             var dto = await LoadOrderDtoAsync(order.Id);
             return (dto, null, 200);
@@ -105,6 +113,7 @@ namespace Restaurant.Api.Services
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
+            await NotifyOrderChangedAsync(order.TableId);
 
             return (await LoadOrderDtoAsync(order.Id), null, 200);
         }
@@ -122,6 +131,11 @@ namespace Restaurant.Api.Services
         {
             await _context.Database.ExecuteSqlInterpolatedAsync(
                 $"SELECT Id FROM Orders WITH (UPDLOCK, ROWLOCK) WHERE Id = {orderId}");
+        }
+
+        private Task NotifyOrderChangedAsync(int tableId)
+        {
+            return _hub.Clients.Group($"table-{tableId}").SendAsync("OrderChanged");
         }
 
         private static string? CleanNote(string? note)
@@ -196,6 +210,7 @@ namespace Restaurant.Api.Services
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
+            await NotifyOrderChangedAsync(order.TableId);
 
             return (await LoadOrderDtoAsync(order.Id), null, 200);
         }
@@ -225,6 +240,7 @@ namespace Restaurant.Api.Services
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
+            await NotifyOrderChangedAsync(order.TableId);
 
             return (await LoadOrderDtoAsync(order.Id), null, 200);
         }
@@ -277,11 +293,16 @@ namespace Restaurant.Api.Services
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
         {
-            return (null, "Order already has an invoice.", 409);
+                _logger.LogWarning("Order {OrderId} not closed, it already has an invoice", orderId);
+
+                return (null, "Order already has an invoice.", 409);
         }
 
         await transaction.CommitAsync();
         await _hub.Clients.All.SendAsync("TablesChanged");
+
+            _logger.LogInformation("Order {OrderId} closed, invoice {InvoiceNumber}, total {Total}" +
+                "payment {Paymentmethod}", order.Id, invoice.InvoiceNumber, invoice.TotalAmount, invoice.PaymentMethod);
 
 
         return (ToInvoiceDto(order, invoice), null, 200);
@@ -312,6 +333,8 @@ namespace Restaurant.Api.Services
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
         await _hub.Clients.All.SendAsync("TablesChanged");
+
+        _logger.LogInformation("Order {OrderId} cancelled on table {TableId}", order.Id, order.TableId);
 
         return (null, 200);
     }

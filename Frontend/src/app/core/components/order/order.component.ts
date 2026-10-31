@@ -94,16 +94,18 @@ export class OrderComponent implements OnInit, OnDestroy {
     });
 
     this.loadOrder();
-
-    this.refreshSubscription = merge(
-      this.realtimeService.tablesChanged$,
-      this.realtimeService.reconnected$
-    ).subscribe(() => this.loadOrder());
+this.realtimeService.joinTable(this.tableId);
+   this.refreshSubscription = merge(
+  this.realtimeService.tablesChanged$,
+  this.realtimeService.orderChanged$,
+  this.realtimeService.reconnected$
+).subscribe(() => this.loadOrder());
   }
 
   ngOnDestroy(): void {
-    this.refreshSubscription?.unsubscribe();
-  }
+  this.refreshSubscription?.unsubscribe();
+  this.realtimeService.leaveTable(this.tableId);
+}
 
   loadOrder(): void {
     this.orderService.getOpenOrderForTable(this.tableId).subscribe({

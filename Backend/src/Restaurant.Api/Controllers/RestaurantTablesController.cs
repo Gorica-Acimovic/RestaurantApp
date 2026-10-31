@@ -44,11 +44,16 @@ namespace Restaurant.Api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteTable(int id)
         {
-            var table = await _tableService.DeleteTableAsync(id);
-            if(!table)
+            var (found,error) = await _tableService.DeleteTableAsync(id);
+            if(!found)
             {
                 return Error(404, "Table not found.");
             }
+
+            if(error is not null)
+                return Error(409,error);
+            
+            
             return NoContent();
         }
 

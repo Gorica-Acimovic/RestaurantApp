@@ -14,14 +14,16 @@ namespace Restaurant.Api.Services
         private readonly IConfiguration _config;
         private readonly IPinHasher _pinHasher;
         private readonly TimeProvider _timeProvider;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(AppDbContext db, ITokenService tokens, IConfiguration config, IPinHasher pinHasher, TimeProvider timeProvider)
+        public AuthService(AppDbContext db, ITokenService tokens, IConfiguration config, IPinHasher pinHasher, TimeProvider timeProvider,ILogger<AuthService> logger )
         {
             _db = db;
             _tokens = tokens;
             _config = config;   
             _pinHasher = pinHasher;
             _timeProvider = timeProvider;
+            _logger = logger;
         }
 
         public async Task<LoginResponse?> LoginAsync(LoginRequest request)
@@ -33,9 +35,11 @@ namespace Restaurant.Api.Services
                 || user.Role == Role.Waiter
                 || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
+                _logger.LogWarning("Failed login for {Email}", request.Email);
                 return null;
             }
 
+            _logger.LogInformation("User {UserId} ({Role}) logged in", user.Id, user.Role);
             return await CreateLoginResponseAsync(user);
         }
 
@@ -81,6 +85,7 @@ namespace Restaurant.Api.Services
             var alreadyExists = await _db.Users.AnyAsync(u => u.Email == request.Email);
             if (alreadyExists)
             {
+                _logger.LogWarning("Registration rejected, email {Email} already in use", request.Email);
                 return null;
             }
 
@@ -103,6 +108,7 @@ namespace Restaurant.Api.Services
             {
                 return null;
             }
+            _logger.LogInformation("Guest {UserId} registered", user.Id);
             return await CreateLoginResponseAsync(user);
         }
 
@@ -133,20 +139,6 @@ namespace Restaurant.Api.Services
                 Role = user.Role.ToString()
             };
         }
-
-        public async Task<LoginResponse?> PinLoginAsync(PinLoginRequest pinLoginRequest)
-        {
-            var pinHash = _pinHasher.HashPin(pinLoginRequest.Pin);
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.PinHash == pinHash && u.IsActive && u.Role == Role.Waiter);
-
-            if (user is null)
-            {
-                return null;
-            }
-
-            return await CreateLoginResponseAsync(user);
-        }
-
         public async Task<(LoginResponse? Response, string? Error, int StatusCode)> PinLoginAsync(PinLoginRequest pinLoginRequest, string clientKey)
         {
             var maxFailed = int.Parse(_config["PinProtection:MaxFailedAttempts"]!);
@@ -165,6 +157,9 @@ namespace Restaurant.Api.Services
             if(attempt.BlockedUntil > now)
             {
                 var minutesLeft = (int)Math.Ceiling((attempt.BlockedUntil.Value - now).TotalMinutes);
+
+                _logger.LogWarning("PIN login rejected for {ClientKey}, still blocked", clientKey);
+
                 return (null, $"Too many failed attempts. Try again in {minutesLeft} minute(s).", 429);
             
             }
@@ -180,6 +175,7 @@ namespace Restaurant.Api.Services
                 attempt.FailedCount++;
 
                 var blocked = attempt.FailedCount >= maxFailed;
+
                 if(blocked)
                 {
                     attempt.BlockedUntil = now.AddMinutes(blockMinutes);
@@ -188,7 +184,16 @@ namespace Restaurant.Api.Services
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                var message = blocked ? $"Invalid pin.Login is blocked for {blockMinutes} minute(s)." : "Invalid pin.";
+                if (blocked)
+                {
+                    _logger.LogWarning("PIN login blocked for {ClientKey} for {BlockMinutes} minute(s)", clientKey, blockMinutes);
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid PIN from {ClientKey}", clientKey);
+                }
+
+                var message = blocked ? $"Invalid pin. Login is blocked for {blockMinutes} minute(s)." : "Invalid pin.";
 
                 return (null, message, 401);
             }
@@ -197,6 +202,7 @@ namespace Restaurant.Api.Services
             await _db.SaveChangesAsync();
             await transaction.CommitAsync();
 
+            _logger.LogInformation("Waiter {UserId} logged in with PIN from {ClientKey}", user.Id, clientKey);
             return (await CreateLoginResponseAsync(user), null, 200);
 
         }

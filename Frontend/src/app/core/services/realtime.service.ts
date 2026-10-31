@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { HUB_URL } from '../api-config';
 import { AuthService } from './auth.service';
+import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +14,9 @@ export class RealtimeService {
 
   private connection : HubConnection | null = null;
   private startFailed = false;
+
+  readonly orderChanged$ = new Subject<void>();
+  private joinedTables = new Set<number>();
 
   constructor(private authService:AuthService) { }
 
@@ -32,13 +35,19 @@ export class RealtimeService {
 
             this.connection.on('TablesChanged', () => this.tablesChanged$.next());
     this.connection.on('ReservationsChanged', () => this.reservationsChanged$.next());
-    this.connection.onreconnected(() => this.reconnected$.next());
+    this.connection.on('OrderChanged', () => this.orderChanged$.next());
+    this.connection.onreconnected(() => {
+      this.rejoinTables();
+      this.reconnected$.next();
+    });
+    
 
           this.start();
   }
  disconnect(): void {
     this.connection?.stop();
     this.connection = null;
+    this.joinedTables.clear();
   }
 
   private start(): void {
@@ -49,6 +58,7 @@ export class RealtimeService {
 
     connection.start()
       .then(() => {
+         this.rejoinTables();
         if (this.startFailed) {
           this.startFailed = false;
           this.reconnected$.next();
@@ -64,7 +74,25 @@ export class RealtimeService {
       });
   }
    
+joinTable(tableId: number): void {
+  this.joinedTables.add(tableId);
+  this.invokeHub('JoinTable', tableId);
+}
 
+leaveTable(tableId: number): void {
+  this.joinedTables.delete(tableId);
+  this.invokeHub('LeaveTable', tableId);
+}
+
+private rejoinTables(): void {
+  this.joinedTables.forEach(id => this.invokeHub('JoinTable', id));
+}
+
+private invokeHub(method: string, tableId: number): void {
+  if (this.connection?.state === HubConnectionState.Connected) {
+    this.connection.invoke(method, tableId).catch(() => { });
+  }
+}
 
 
 }

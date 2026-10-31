@@ -122,6 +122,9 @@ namespace Restaurant.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CreatedById")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -146,6 +149,8 @@ namespace Restaurant.Api.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("SubcategoryId");
 
@@ -666,11 +671,18 @@ namespace Restaurant.Api.Migrations
 
             modelBuilder.Entity("Restaurant.Api.Models.MenuItem", b =>
                 {
+                    b.HasOne("Restaurant.Api.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Restaurant.Api.Models.MenuSubcategory", "Subcategory")
                         .WithMany()
                         .HasForeignKey("SubcategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("CreatedBy");
 
                     b.Navigation("Subcategory");
                 });

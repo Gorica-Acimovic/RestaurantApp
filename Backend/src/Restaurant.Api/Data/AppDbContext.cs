@@ -75,6 +75,10 @@ namespace Restaurant.Api.Data
                     .WithMany()
                     .HasForeignKey(m => m.SubcategoryId)
                     .OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(m => m.CreatedBy)
+                    .WithMany()
+                    .HasForeignKey(m => m.CreatedById)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 e.ToTable(t =>
                 {

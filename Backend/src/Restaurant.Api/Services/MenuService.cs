@@ -15,7 +15,7 @@ namespace Restaurant.Api.Services
             _context = context;
         }
 
-        public async Task<(MenuItemDto? Item, string? Error)> CreateMenuItemAsync(SaveMenuItemRequest request)
+        public async Task<(MenuItemDto? Item, string? Error)> CreateMenuItemAsync(SaveMenuItemRequest request, int managerId)
         {
             var subcategory = await _context.MenuSubcategories.FirstOrDefaultAsync(s => s.Id == request.SubcategoryId);
             if (subcategory == null)
@@ -29,6 +29,7 @@ namespace Restaurant.Api.Services
                 Description = request.Description,
                 Price = request.Price,
                 SubcategoryId = subcategory.Id,
+                CreatedById = managerId
             };
             _context.MenuItems.Add(menuItem);
             await _context.SaveChangesAsync();

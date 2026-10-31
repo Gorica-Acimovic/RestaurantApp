@@ -59,17 +59,43 @@ namespace Restaurant.Api.Services
             return (tableDto, null);
         }
 
-        public async Task<bool> DeleteTableAsync(int id)
+        public async Task<(bool Found, string? Error)> DeleteTableAsync(int id)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            await _context.Database.ExecuteSqlInterpolatedAsync
+                ($"SELECT Id FROM RestaurantTables WITH (UPDLOCK,ROWLOCK) WHERE Id = {id}");
+           
+            
             var table = await _context.RestaurantTables.FirstOrDefaultAsync(t => t.Id == id && t.IsActive);
+
             if(table == null)
             {
-                return false;
+                return (false, null);
             }
+
+            var hasOpenOrder = await _context.Orders.AnyAsync(o => o.TableId == id && o.Status == OrderStatus.Open);
+           
+            if(hasOpenOrder)
+            {
+                return (true, "Table has an open order. Close or cancel the order first.");
+            }
+
+            var now = _timeProvider.GetLocalNow().DateTime;
+
+            var hasReservations = await _context.Reservations.AnyAsync(r => r.TableId == id && r.EndsAt > now &&
+        (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Confirmed));
+
+            if(hasReservations)
+            {
+                return (true, "Table has upcoming reservations. Cancel or move them first.");
+            }
+
             table.IsActive = false;
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
             await _hub.Clients.All.SendAsync("TablesChanged");
-            return true;
+            return (true, null);
         }
 
         public async Task<List<TableDto>> GetAllTablesAsync()

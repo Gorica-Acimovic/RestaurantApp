@@ -17,13 +17,17 @@ namespace Restaurant.Api.Services
         private readonly ReservationOptions _reservationOptions;
         private readonly TimeProvider _timeProvider;
         IHubContext<RestaurantHub> _hub;
+        private readonly ILogger<ReservationService> _logger;
 
-        public ReservationService(AppDbContext context, IOptions<ReservationOptions> reservationOptions, TimeProvider timeProvider, IHubContext<RestaurantHub> hub)
+        public ReservationService(AppDbContext context, IOptions<ReservationOptions> reservationOptions, 
+            TimeProvider timeProvider, IHubContext<RestaurantHub> hub, ILogger<ReservationService> logger)
         {
             _context = context;
             _reservationOptions = reservationOptions.Value;
             _timeProvider = timeProvider;
             _hub = hub;
+            _logger = logger;
+
         }
 
         public async Task<(ReservationDto? Reservation, string? Error, int StatusCode)> ChangeStatusAsync(int id, ChangeReservationStatusRequest request, int userId, bool isStaff)
@@ -38,6 +42,7 @@ namespace Restaurant.Api.Services
             }
 
             var isOwner = reservation.UserId == userId;
+
             if (!isStaff && !(isOwner && request.Status == ReservationStatus.Cancelled))
             {
                 return (null, "You are not allowed to do this.", 403);
@@ -120,12 +125,18 @@ namespace Restaurant.Api.Services
                     await _context.Database.ExecuteSqlInterpolatedAsync
                         ($"SELECT Id FROM RestaurantTables WITH(UPDLOCK, ROWLOCK) WHERE Id ={table.Id}");
 
+                    if (!await _context.RestaurantTables.AnyAsync(t => t.Id == table.Id && t.IsActive))
+                    {
+                        return (null, "Table not found", 400);
+                    }
+
                     var taken = await _context.Reservations.AnyAsync(r => r.Id != reservation.Id && r.TableId == table.Id &&
                         (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Confirmed)
                         && r.StartsAt < reservation.EndsAt && r.EndsAt > reservation.StartsAt);
 
                     if (taken)
                     {
+                        _logger.LogWarning("Reservation {ReservationId} not confirmed, table {TableId} is already reserved for that time", reservation.Id, table.Id);
                         return (null, "The table is already reserved for that time.", 409);
                     }
 
@@ -138,13 +149,16 @@ namespace Restaurant.Api.Services
             }
             catch (DbUpdateConcurrencyException)
             {
+                _logger.LogWarning("Reservation {ReservationId} was changed by someone else, status change to {Status} rejected", reservation.Id, next);
                 return (null, "Reservation was changed by someone else. Reload and try again.", 409);
             }
             catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
             {
+                _logger.LogWarning("Reservation {ReservationId} not confirmed, unique index blocked a duplicate on the table", reservation.Id);
                 return (null, "The table is already reserved for that time.", 409);
             }
             await _hub.Clients.All.SendAsync("ReservationsChanged");
+            _logger.LogInformation("Reservation {ReservationId} changed from {From} to {To} by user {UserId}, table {TableId}", reservation.Id, current, next, userId, reservation.TableId);
 
             var dto = new ReservationDto
             {
@@ -204,12 +218,18 @@ namespace Restaurant.Api.Services
                     await _context.Database.ExecuteSqlInterpolatedAsync
                         ($"SELECT Id FROM RestaurantTables WITH(UPDLOCK, ROWLOCK) WHERE Id ={table.Id}");
 
+                    if (!await _context.RestaurantTables.AnyAsync(t => t.Id == table.Id && t.IsActive))
+                    {
+                        return (null, "Table not found", false);
+                    }
+
                     var taken = await _context.Reservations.AnyAsync(r => r.TableId == table.Id &&
                   (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Confirmed)
                   && r.StartsAt < endTime && r.EndsAt > startTime);
 
                     if (taken)
                     {
+                        _logger.LogWarning("Reservation rejected, table {TableId} is already reserved for {StartsAt}", table.Id, startTime);
                         return (null, "The table is already reserved for that time.", true);
                     }
 
@@ -233,6 +253,9 @@ namespace Restaurant.Api.Services
                 await transaction.CommitAsync();
                 await _hub.Clients.All.SendAsync("ReservationsChanged");
 
+                _logger.LogInformation("Reservation {ReservationId} created for {StartsAt}, {Guests} guest(s), table {TableId}, user {UserId}", 
+                    reservation.Id, startTime, request.NumberOfGuests, table?.Id, userId);
+
                 var dto = new ReservationDto
                 {
                     Id = reservation.Id,
@@ -253,6 +276,7 @@ namespace Restaurant.Api.Services
 
             catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
             {
+                _logger.LogWarning("Reservation rejected, unique index blocked a duplicate for {StartsAt}", startTime);
                 return (null, "No free table for that time.", true);
             }
         }
@@ -324,6 +348,7 @@ namespace Restaurant.Api.Services
 
             if (noShows + cancelled > 0)
             {
+                _logger.LogInformation("Closed expired reservations: {NoShows} no-show, {Cancelled} cancelled", noShows, cancelled);
                 await _hub.Clients.All.SendAsync("ReservationsChanged");
             }
 

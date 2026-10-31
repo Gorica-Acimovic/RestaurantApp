@@ -12,11 +12,14 @@ namespace Restaurant.Api.Services
         private readonly AppDbContext _db;
         private readonly IPinHasher _pinHasher;
         private readonly TimeProvider _timeProvider;
-        public UserService(AppDbContext db, IPinHasher pinHasher, TimeProvider timeProvider)
+        private readonly ILogger<UserService> _logger;
+        public UserService(AppDbContext db, IPinHasher pinHasher, TimeProvider timeProvider, ILogger<UserService> logger)
         {
             _db = db;
             _pinHasher = pinHasher;
             _timeProvider = timeProvider;
+            _logger = logger;
+
         }
 
         public async Task<(bool Success, string? Error)> ChangePasswordAsync(int userId, ChangePasswordRequest request)
@@ -34,11 +37,15 @@ namespace Restaurant.Api.Services
 
             if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
             {
+                _logger.LogWarning("Password change rejected for user {UserId}, current password incorrect", userId);
                 return (false, "Current password is incorrect.");
             }
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
             await _db.SaveChangesAsync();
+
+            _logger.LogInformation("User {UserId} changed the password", userId);
+
             return (true, null);
         }
 
@@ -130,6 +137,7 @@ namespace Restaurant.Api.Services
 
                 return null;
             }
+            _logger.LogInformation("Manager {UserId} registered by admin {AdminId}", user.Id, adminId);
 
             return new UserDto
             {
@@ -185,9 +193,9 @@ namespace Restaurant.Api.Services
                 return (null,error);
             }
 
+            _logger.LogInformation("Waiter {UserId} registered by manager {ManagerId}", user.Id, managerId);
 
-
-           var dto = new UserDto
+            var dto = new UserDto
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
@@ -209,6 +217,9 @@ namespace Restaurant.Api.Services
             }
             manager.IsActive = isActive;
             await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Manager {UserId} set to active={IsActive} by admin {AdminId}", managerId, isActive, adminId);
+
             return true;
         }
 
@@ -250,7 +261,7 @@ namespace Restaurant.Api.Services
                 return (true, error);
             }
 
-            
+            _logger.LogInformation("Waiter {UserId} set to active={IsActive} by manager {ManagerId}", waiterId, isActive, managerId);
             return (true, null);
         }
 
@@ -288,6 +299,8 @@ namespace Restaurant.Api.Services
 
                 return (true, error);
             }
+            _logger.LogInformation("Manager {UserId} updated by admin {AdminId}", managerId, adminId);
+
             return (true, null);
 
         }
@@ -341,6 +354,9 @@ namespace Restaurant.Api.Services
 
                 return (true, error);
             }
+
+            _logger.LogInformation("Waiter {UserId} updated by manager {ManagerId}", waiterId, managerId);
+
             return (true, null);
         }
 
@@ -372,6 +388,7 @@ namespace Restaurant.Api.Services
             {
                 if(string.IsNullOrEmpty(request.Pin) || _pinHasher.HashPin(request.Pin) != user.PinHash)
                 {
+                    _logger.LogWarning("Deactivation rejected for user {UserId}, PIN incorrect", userId);
                     return ("Pin is incorrect.", 400);
                 }
 
@@ -384,6 +401,7 @@ namespace Restaurant.Api.Services
             }
             else if (string.IsNullOrEmpty(request.Password) || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
+                _logger.LogWarning("Deactivation rejected for user {UserId}, password incorrect", userId);
                 return ("Password is incorrect!", 400);
             }
             user.IsActive = false;
@@ -409,7 +427,9 @@ namespace Restaurant.Api.Services
             }
 
             await _db.SaveChangesAsync();
-            return( null, 204 );
+            _logger.LogInformation("User {UserId} ({Role}) deactivated own account, {Tokens} refresh token(s) revoked", userId, user.Role, tokens.Count);
+
+            return ( null, 204 );
 
         }
         

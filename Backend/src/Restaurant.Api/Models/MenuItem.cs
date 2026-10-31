@@ -10,5 +10,8 @@
         public bool IsActive { get; set; } = true;
         public int SubcategoryId { get; set; }
         public MenuSubcategory Subcategory { get; set; } = null!;
+        
+        public int? CreatedById { get; set; }
+        public User? CreatedBy { get; set; }
     }
 }
