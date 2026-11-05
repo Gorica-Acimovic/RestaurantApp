@@ -20,6 +20,7 @@ namespace Restaurant.Api.Data
             public DbSet<Order> Orders => Set<Order>();
             public DbSet<OrderItem> OrderItems => Set<OrderItem>();
             public DbSet<Invoice> Invoices => Set<Invoice>();
+            public DbSet<Delivery> Deliveries => Set<Delivery>();
             public DbSet<Review> Reviews => Set<Review>();
 
             public DbSet<DailyStatistic> DailyStatistics => Set<DailyStatistic>();
@@ -145,6 +146,8 @@ namespace Restaurant.Api.Data
             {
                 e.Property(o => o.Status).HasConversion<string>().HasMaxLength(20);
 
+                e.Property(o => o.Channel).HasConversion<string>().HasMaxLength(20).HasDefaultValue(OrderChannel.DineIn);   
+
                 e.HasOne(o => o.Table)
                 .WithMany()
                 .HasForeignKey(o => o.TableId)
@@ -155,13 +158,21 @@ namespace Restaurant.Api.Data
                     .HasForeignKey(o => o.WaiterId)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                e.HasOne(o => o.Guest)
+                     .WithMany()
+                    .HasForeignKey(o => o.GuestId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 e.HasIndex(o => o.TableId)
                     .IsUnique()
-                    .HasFilter("[Status] = 'Open'");
+                    .HasFilter("[Status] = 'Open' AND [TableId] IS NOT NULL");
 
                 e.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_Orders_NumberOfGuests", "[NumberOfGuests] >= 1");
+                    t.HasCheckConstraint("CK_Orders_Channel",
+                            "([Channel] = 'DineIn' AND [TableId] IS NOT NULL AND [WaiterId] IS NOT NULL) OR " +
+                            "([Channel] <> 'DineIn' AND [TableId] IS NULL AND [GuestId] IS NOT NULL)");
                 });
 
             });
@@ -171,6 +182,8 @@ namespace Restaurant.Api.Data
             {
                 e.Property(i => i.UnitPrice).HasPrecision(10, 2);
                 e.Property(i => i.Note).HasMaxLength(200);
+                e.Property(i => i.Status).HasConversion<string>().HasMaxLength(20).HasDefaultValue(OrderItemStatus.New);
+                e.Property(i => i.CreatedAt).HasDefaultValueSql("GETDATE()");
 
                 e.HasOne(i => i.Order)
                  .WithMany(o => o.Items)
@@ -281,6 +294,40 @@ namespace Restaurant.Api.Data
 
             });
 
+
+            modelBuilder.Entity<Delivery>(e =>
+            {
+                e.Property(d => d.Address).HasMaxLength(200);
+                e.Property(d => d.Phone).IsRequired().HasMaxLength(20);
+                e.Property(d => d.Note).HasMaxLength(200);
+                e.Property(d => d.DeliveryFee).HasPrecision(10, 2);
+                e.Property(d => d.PaymentMethod).HasConversion<string>().HasMaxLength(20).HasDefaultValue(PaymentMethod.Cash);
+                e.Property(d => d.Status).HasConversion<string>().HasMaxLength(20).HasDefaultValue(DeliveryStatus.Received);
+                e.Property(d => d.RowVersion).IsRowVersion();
+
+                e.HasOne(d => d.Order)
+                    .WithOne(o => o.Delivery)
+                    .HasForeignKey<Delivery>(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(d => d.Courier)
+                    .WithMany()
+                    .HasForeignKey(d => d.CourierId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasIndex(d => d.CourierId)
+                    .IsUnique()
+                    .HasFilter("[Status] = 'OutForDelivery'");
+
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_Deliveries_DeliveryFee", "[DeliveryFee] >= 0");
+                    t.HasCheckConstraint("CK_Deliveries_Courier",
+                        "[CourierId] IS NOT NULL OR [Status] NOT IN ('OutForDelivery', 'Delivered')");
+                    t.HasCheckConstraint("CK_Deliveries_Pickup",
+                        "[Status] <> 'PickedUp' OR [CourierId] IS NULL");
+                });
+            });
 
         }
 

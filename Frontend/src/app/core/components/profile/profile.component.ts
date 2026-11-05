@@ -57,12 +57,12 @@ export class ProfileComponent implements OnInit {
     );
   }
 
-  get isWaiter():boolean {
-    return this.role === 'Waiter';
+  get usesPin():boolean {
+    return this.role === 'Waiter' || this.role === 'Kitchen' || this.role === 'Courier';
   }
 
-  get canChangePassword():boolean{
-    return this.role !== 'Waiter';
+ get canChangePassword():boolean{
+    return !this.usesPin;
   }
   get canDeactivate():boolean {
     return this.role !== 'Admin';
@@ -109,7 +109,7 @@ export class ProfileComponent implements OnInit {
     this.deactivateError = '';
     const value = this.credentialControl.value;
 this.profileService
-      .deactivate({ password: this.isWaiter ? null : value, pin: this.isWaiter ? value : null })
+      .deactivate({ password: this.usesPin ? null : value, pin: this.usesPin ? value : null })
       .subscribe({
         next: () => {
           this.toastr.success('Your account has been deactivated.');

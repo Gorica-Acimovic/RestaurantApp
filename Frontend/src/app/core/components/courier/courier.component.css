@@ -1,0 +1,73 @@
+.empty,
+.info {
+  color: var(--muted);
+}
+
+.info {
+  margin: 4px 0;
+}
+
+.section-title {
+  margin: 32px 0 16px;
+}
+
+.orders {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.order-card {
+  margin-bottom: 0;
+}
+
+.order-card.mine {
+  border-color: var(--accent);
+  margin-bottom: 24px;
+  max-width: 480px;
+}
+
+.order-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.order-head h3 {
+  margin: 0;
+}
+
+.badge {
+  padding: 2px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
+.address {
+  margin: 8px 0;
+  font-size: 1.05rem;
+}
+
+.note {
+  margin: 8px 0;
+}
+
+.items {
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.items li {
+  padding: 4px 0;
+}
+
+.collect {
+  margin: 16px 0;
+  font-weight: 600;
+}

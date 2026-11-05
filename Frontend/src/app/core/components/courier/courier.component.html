@@ -1,0 +1,59 @@
+<h2 class="page-title">Deliveries</h2>
+
+@if (errorMessage) {
+  <p class="form-error">{{ errorMessage }}</p>
+}
+
+@if (myDelivery) {
+  <div class="panel order-card mine">
+    <div class="order-head">
+      <h3>Your delivery #{{ myDelivery.id }}</h3>
+      <span class="badge">On the way</span>
+    </div>
+
+    <p class="info">{{ myDelivery.guestName }} · {{ myDelivery.phone }}</p>
+    <p class="address">{{ myDelivery.address }}</p>
+    @if (myDelivery.note) {
+      <p class="note">Note: {{ myDelivery.note }}</p>
+    }
+
+    <ul class="items">
+      @for (item of myDelivery.items; track item.id) {
+        <li><span>{{ item.quantity }} × {{ item.menuItemName }}</span></li>
+      }
+    </ul>
+
+    <p class="collect">Collect {{ myDelivery.total | number: '1.2-2' }} {{ currency }} ({{ myDelivery.paymentMethod }})</p>
+
+    <div class="row-actions">
+      <button type="button" class="button primary" [disabled]="busy" (click)="deliver(myDelivery)">Delivered</button>
+    </div>
+  </div>
+}
+
+<h3 class="section-title">Available deliveries</h3>
+
+@if (loaded && available.length === 0 && !errorMessage) {
+  <p class="empty">No deliveries are waiting right now.</p>
+}
+
+<div class="orders">
+  @for (order of available; track order.id) {
+    <div class="panel order-card">
+      <div class="order-head">
+        <h3>#{{ order.id }}</h3>
+        <span class="total">{{ order.total | number: '1.2-2' }} {{ currency }}</span>
+      </div>
+
+      <p class="address">{{ order.address }}</p>
+      <p class="info">{{ order.items.length }} item(s) · {{ order.paymentMethod }}</p>
+
+      <div class="row-actions">
+        <button type="button" class="button primary" [disabled]="busy || myDelivery !== null" (click)="take(order)">Take</button>
+      </div>
+      @if (myDelivery) {
+        <p class="info">Finish your current delivery first.</p>
+      }
+    </div>
+  }
+</div>

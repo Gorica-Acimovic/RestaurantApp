@@ -14,5 +14,8 @@
         public decimal UnitPrice { get; set; }
         public string? Note { get; set; }
 
+        public OrderItemStatus Status { get; set; } = OrderItemStatus.New;
+        public DateTime CreatedAt { get; set; } 
+
     }
 }

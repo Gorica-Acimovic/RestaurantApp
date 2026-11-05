@@ -1,0 +1,56 @@
+<h2 class="page-title">Online orders</h2>
+
+@if (errorMessage) {
+  <p class="form-error">{{ errorMessage }}</p>
+}
+
+@if (loaded && orders.length === 0 && !errorMessage) {
+  <p class="empty">No active online orders.</p>
+}
+
+<div class="orders">
+  @for (order of orders; track order.id) {
+    <div class="panel order-card" [class.new-order]="order.status === 'Received'">
+      <div class="order-head">
+        <h3>#{{ order.id }} · {{ order.channel }}</h3>
+        <span class="badge badge-{{ order.status }}">{{ labels[order.status] }}</span>
+      </div>
+
+      <p class="info">{{ order.guestName }} · {{ order.phone }}</p>
+      <p class="info">Placed {{ order.placedAt | date: 'dd.MM. HH:mm' }}</p>
+      @if (order.channel === 'Delivery') {
+        <p class="info">Address: {{ order.address }}</p>
+      }
+      @if (order.note) {
+        <p class="note">Note: {{ order.note }}</p>
+      }
+      @if (order.courierName) {
+        <p class="info">Courier: {{ order.courierName }}</p>
+      }
+
+      <ul class="items">
+        @for (item of order.items; track item.id) {
+          <li>
+            <span>{{ item.quantity }} × {{ item.menuItemName }}</span>
+            <span>{{ item.lineTotal | number: '1.2-2' }} {{ currency }}</span>
+          </li>
+        }
+        @if (order.deliveryFee > 0) {
+          <li><span>Delivery fee</span><span>{{ order.deliveryFee | number: '1.2-2' }} {{ currency }}</span></li>
+        }
+        <li class="total"><span>Total ({{ order.paymentMethod }})</span><span>{{ order.total | number: '1.2-2' }} {{ currency }}</span></li>
+      </ul>
+
+      @if (order.status === 'Ready' && order.channel === 'Delivery') {
+        <p class="info">Waiting for a courier.</p>
+      }
+
+      <div class="row-actions">
+        @for (action of actions(order); track action.status) {
+          <button type="button" class="button small" [class.primary]="!action.danger" [class.danger]="action.danger"
+            (click)="changeStatus(order, action)">{{ action.label }}</button>
+        }
+      </div>
+    </div>
+  }
+</div>

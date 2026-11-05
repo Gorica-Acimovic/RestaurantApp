@@ -1,0 +1,82 @@
+<h2 class="page-title">Your cart</h2>
+@if(cartService.lines.length == 0){
+    <p class="empty">Your cart is empty.</p>
+    <a class="button primary" routerLink="/menu"> Browse the menu</a>
+} @else {
+    <div class="checkout-grid">
+        <div class="panel">
+            <h3>Items</h3>
+
+            @for(line of cartService.lines; track line.menuItemId){
+                <div class="cart-line">
+                    <span class="line-name">{{line.name}}</span>
+                    <div class="quantity">
+                        <button type="button" class="quantity-button" (click) = "cartService.setQuantity(line,line.quantity - 1)">-</button>
+                        <span>{{line.quantity}}</span>
+                        <button type="button" class="quantity-button" (click) = "cartService.setQuantity(line,line.quantity + 1)">+</button>
+                    </div>
+                    <span class="line-total"> {{line.price * line.quantity | number:'1.2-2'}} {{currency}}</span>
+                    <button type="button" class="link-button" (click)="cartService.remove(line)">Remove</button>
+                </div>
+            }
+        
+            <div class="totals">
+                <div>
+                    <span>Items</span><span>{{cartService.subtotal | number:'1.2-2'}} {{currency}}</span>
+                </div>
+
+                @if(isDelivery) {
+                    <div><span>Delivery fee</span><span>{{fee | number:'1.2-2'}} {{currency}}</span></div>
+                }
+                <div class="grand-total"><span>Total</span><span>{{total | number:'1.2-2'}} {{currency}}</span></div>
+            </div>
+        </div>
+
+        <form class="panel" [formGroup] = "form" (ngSubmit) = "submit()">
+            <h3>Details</h3>
+            <mat-radio-group formControlName = "channel" class="radio-row">
+                <mat-radio-button value="Pickup">Pickup</mat-radio-button>
+                <mat-radio-button value="Delivery">Delivery</mat-radio-button>
+            </mat-radio-group>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Phone</mat-label>
+                <input matInput formControlName = "phone"/>
+                @if(form.controls['phone'].hasError('required')){
+                    <mat-error>Phone is required</mat-error>
+                }@else {
+                    <mat-error>Phone number is not valid</mat-error>
+                }
+            </mat-form-field>
+
+            @if(isDelivery) {
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Delivery Address</mat-label>
+                    <input matInput formControlName = "address"/>
+                    @if(form.controls['address'].hasError('required')){
+                        <mat-error>Address is required for delivery</mat-error>
+                    } @else {
+                        <mat-error>Address can have at most 200 characters</mat-error>
+                    }
+                </mat-form-field>
+            }
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Note(optional)</mat-label>
+                <textarea matInput formControlName = "note"></textarea>
+                <mat-error>Note can have at most 200 characters</mat-error>
+            </mat-form-field>
+
+            <p class="label">Payment</p>
+            <mat-radio-group formControlName="paymentMethod" class="radio-row">
+                <mat-radio-button value="Cash">Cash</mat-radio-button>
+                <mat-radio-button value="Card">Card</mat-radio-button>
+            </mat-radio-group>
+            <p class="hint">You pay when you {{isDelivery ? 'receive' : 'pickup'}} the order.</p>
+
+            <button type="submit" class="button primary full-width" [disabled]="submitting">Place order</button>
+
+        </form>
+    </div>
+}
+  

@@ -1,0 +1,84 @@
+.checkout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.empty,
+.hint,
+.label {
+  color: var(--muted);
+}
+
+.hint {
+  margin: 8px 0 24px;
+  font-size: 0.9rem;
+}
+
+.label {
+  margin: 8px 0 0;
+}
+
+.radio-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.cart-line {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.quantity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quantity-button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.line-total {
+  min-width: 80px;
+  text-align: right;
+}
+
+.link-button {
+  border: none;
+  background: none;
+  color: var(--error);
+  cursor: pointer;
+}
+
+.totals {
+  margin-top: 16px;
+}
+
+.totals div {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  color: var(--muted);
+}
+
+.totals .grand-total {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.2rem;
+}

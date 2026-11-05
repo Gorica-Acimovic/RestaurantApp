@@ -21,6 +21,7 @@
     <PackageReference Include="Microsoft.ML.TimeSeries" Version="5.0.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
   </ItemGroup>
 
 </Project>

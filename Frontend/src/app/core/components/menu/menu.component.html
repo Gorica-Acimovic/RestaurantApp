@@ -4,6 +4,13 @@
     <p>Fresh dishes and drinks, prepared every day.</p>
   </header>
 
+  @if (canOrder && cartService.count > 0) {
+  <div class="cart-bar">
+    <span>{{ cartService.count }} in cart · {{ cartService.subtotal | number: '1.2-2' }} {{ currency }}</span>
+    <a class="button primary small" routerLink="/dashboard/checkout">View cart</a>
+  </div>
+}
+
   <div class="filters">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Search by name</mat-label>
@@ -47,7 +54,9 @@
 
           @if (!item.isAvailable) {
             <p class="unavailable-label">Currently unavailable</p>
-          }
+          } @else if (canOrder) {
+           <button type="button" class="button outline small add-button" (click)="addToCart(item)">Add to cart</button>
+}
         </article>
       }
     </div>

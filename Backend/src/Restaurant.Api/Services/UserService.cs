@@ -30,9 +30,9 @@ namespace Restaurant.Api.Services
                 return (false, "User not found.");
             }
 
-            if (user.Role == Role.Waiter)
+            if (StaffRoles.WithPin.Contains(user.Role))
             {
-                return (false, "Waiters have no password. They log in with a PIN.");
+                return (false, "Waiters and kitchen staff have no password. They log in with a PIN.");
             }
 
             if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
@@ -68,7 +68,7 @@ namespace Restaurant.Api.Services
 
         public async Task<List<UserDto>> GetAllWaitersAsync(int managerId)
         {
-           var waiters = await _db.Users.Where(u => u.RegisteredById == managerId && u.Role == Role.Waiter)
+           var waiters = await _db.Users.Where(u => u.RegisteredById == managerId && StaffRoles.WithPin.Contains(u.Role))
                 .Select(u => new UserDto
                 {
                     Id = u.Id,
@@ -172,7 +172,7 @@ namespace Restaurant.Api.Services
                 Email = request.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
                 PinHash = pinHash,
-                Role = Role.Waiter,
+                Role = request.Role,
                 IsActive = true,
                 RegisteredById = managerId
             };
@@ -226,7 +226,7 @@ namespace Restaurant.Api.Services
         public async Task<(bool Found, string? Error)> SetWaitersProfileStatus(int waiterId, int managerId, bool isActive)
         {
             var waiter = await _db.Users.FirstOrDefaultAsync(u => u.Id == waiterId && u.RegisteredById == managerId
-                && u.Role == Role.Waiter);
+                && StaffRoles.WithPin.Contains(u.Role));
 
             if (waiter is null)
             {
@@ -308,7 +308,7 @@ namespace Restaurant.Api.Services
         public async Task<(bool Found, string? Error)> UpdateWaiterAsync(int waiterId, int managerId, UpdateWaiterRequest request)
         {
             var waiter = await _db.Users.FirstOrDefaultAsync(u =>
-                u.Id == waiterId && u.RegisteredById == managerId && u.Role == Role.Waiter);
+                u.Id == waiterId && u.RegisteredById == managerId && StaffRoles.WithPin.Contains(u.Role));
 
             if (waiter is null)
             {
@@ -384,7 +384,7 @@ namespace Restaurant.Api.Services
                 return ("Administrators cannot deactivate their own accounts.", 403);
             }
 
-            if(user.Role == Role.Waiter)
+            if(StaffRoles.WithPin.Contains(user.Role))
             {
                 if(string.IsNullOrEmpty(request.Pin) || _pinHasher.HashPin(request.Pin) != user.PinHash)
                 {

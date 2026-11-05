@@ -1,0 +1,55 @@
+<h2 class="page-title"> Kitchen </h2>
+
+@if(errorMessage) {
+    <p class="form-error">{{errorMessage}}</p>
+}
+
+@if(loaded && tickets.length === 0 && !errorMessage) {
+    <p class="empty">Nothing to prepare right now.</p>
+}
+
+<div class="tickets">
+    @for(ticket of tickets; track ticket.orderId) {
+       <div class="panel ticket" [class.late]="minutesWaiting(ticket) >= 15">
+            <div class="ticket-head" >
+                <h3>{{ticket.title}}</h3>
+                <span class="waiting">{{minutesWaiting(ticket)}} min</span>
+            </div>
+    
+        @if(ticket.note){
+            <p class="note">Note: {{ticket.note}}</p>
+        }
+
+
+        <ul class="items">
+            @for(item of ticket.items; track item.id){
+                <li [class.done]="item.status === 'Ready'">
+                    <div class="item-text">
+                        <strong>{{item.quantity}} x </strong> {{item.name}}
+                        @if(item.note){
+                            <small class="item-note">{{item.note}}</small>
+                        }
+                    </div>
+                    @if(item.status === 'New'){
+                        <button type="button" class="button outline small" (click)="startItem(item)"> Start </button>
+                    } @else if( item.status === 'Preparing') {
+                         <button type="button" class="button outline small" (click)="finishItem(item)"> Done </button>
+
+                    } @else {
+                        <span class="ready-label">Ready</span>
+                    }
+
+                </li>
+            }
+        </ul>
+        
+        <div class="row-actions">
+            @if(hasNew(ticket)) {
+                <button type="button" class="button outline small" (click)="startAll(ticket)">Start all</button>
+            }
+               <button type="button" class="button primary small" (click)="finishAll(ticket)">All ready</button>
+        </div>
+       </div>
+    }
+
+</div>

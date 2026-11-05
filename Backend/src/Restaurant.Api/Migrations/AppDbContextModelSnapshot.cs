@@ -72,6 +72,88 @@ namespace Restaurant.Api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Restaurant.Api.Models.Delivery", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CourierId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("DeliveryFee")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Cash");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("PlacedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReadyAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Received");
+
+                    b.Property<DateTime?>("TakenAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourierId")
+                        .IsUnique()
+                        .HasFilter("[Status] = 'OutForDelivery'");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("Deliveries", t =>
+                        {
+                            t.HasCheckConstraint("CK_Deliveries_Courier", "[CourierId] IS NOT NULL OR [Status] NOT IN ('OutForDelivery', 'Delivered')");
+
+                            t.HasCheckConstraint("CK_Deliveries_DeliveryFee", "[DeliveryFee] >= 0");
+
+                            t.HasCheckConstraint("CK_Deliveries_Pickup", "[Status] <> 'PickedUp' OR [CourierId] IS NULL");
+                        });
+                });
+
             modelBuilder.Entity("Restaurant.Api.Models.Invoice", b =>
                 {
                     b.Property<int>("Id")
@@ -269,8 +351,18 @@ namespace Restaurant.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("DineIn");
+
                     b.Property<DateTime?>("ClosedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("GuestId")
+                        .HasColumnType("int");
 
                     b.Property<int>("NumberOfGuests")
                         .HasColumnType("int");
@@ -283,22 +375,26 @@ namespace Restaurant.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("TableId")
+                    b.Property<int?>("TableId")
                         .HasColumnType("int");
 
-                    b.Property<int>("WaiterId")
+                    b.Property<int?>("WaiterId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GuestId");
+
                     b.HasIndex("TableId")
                         .IsUnique()
-                        .HasFilter("[Status] = 'Open'");
+                        .HasFilter("[Status] = 'Open' AND [TableId] IS NOT NULL");
 
                     b.HasIndex("WaiterId");
 
                     b.ToTable("Orders", t =>
                         {
+                            t.HasCheckConstraint("CK_Orders_Channel", "([Channel] = 'DineIn' AND [TableId] IS NOT NULL AND [WaiterId] IS NOT NULL) OR ([Channel] <> 'DineIn' AND [TableId] IS NULL AND [GuestId] IS NOT NULL)");
+
                             t.HasCheckConstraint("CK_Orders_NumberOfGuests", "[NumberOfGuests] >= 1");
                         });
                 });
@@ -310,6 +406,11 @@ namespace Restaurant.Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<int>("MenuItemId")
                         .HasColumnType("int");
@@ -323,6 +424,13 @@ namespace Restaurant.Api.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("New");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(10, 2)
@@ -658,6 +766,24 @@ namespace Restaurant.Api.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Restaurant.Api.Models.Delivery", b =>
+                {
+                    b.HasOne("Restaurant.Api.Models.User", "Courier")
+                        .WithMany()
+                        .HasForeignKey("CourierId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Restaurant.Api.Models.Order", "Order")
+                        .WithOne("Delivery")
+                        .HasForeignKey("Restaurant.Api.Models.Delivery", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Courier");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("Restaurant.Api.Models.Invoice", b =>
                 {
                     b.HasOne("Restaurant.Api.Models.Order", "Order")
@@ -689,17 +815,22 @@ namespace Restaurant.Api.Migrations
 
             modelBuilder.Entity("Restaurant.Api.Models.Order", b =>
                 {
+                    b.HasOne("Restaurant.Api.Models.User", "Guest")
+                        .WithMany()
+                        .HasForeignKey("GuestId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Restaurant.Api.Models.RestaurantTable", "Table")
                         .WithMany()
                         .HasForeignKey("TableId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Restaurant.Api.Models.User", "Waiter")
                         .WithMany()
                         .HasForeignKey("WaiterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Guest");
 
                     b.Navigation("Table");
 
@@ -783,6 +914,8 @@ namespace Restaurant.Api.Migrations
 
             modelBuilder.Entity("Restaurant.Api.Models.Order", b =>
                 {
+                    b.Navigation("Delivery");
+
                     b.Navigation("Invoice");
 
                     b.Navigation("Items");

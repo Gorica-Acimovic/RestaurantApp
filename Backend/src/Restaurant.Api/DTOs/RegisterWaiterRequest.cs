@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Restaurant.Api.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Restaurant.Api.DTOs
 {
@@ -21,5 +22,7 @@ namespace Restaurant.Api.DTOs
         [Required(ErrorMessage = "Pin is required.")]
         [RegularExpression(@"^\d{4}$", ErrorMessage = "Pin must be a 4-digit number.")]
         public string Pin { get; set; } = string.Empty;
+
+        public Role Role { get; set; } = Role.Waiter;
     }
 }

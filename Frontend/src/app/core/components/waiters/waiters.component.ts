@@ -6,6 +6,7 @@ import { WaiterService } from '../../services/waiter.service';
 import { MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { UserDto } from '../../models/user.models';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-waiters',
@@ -14,7 +15,8 @@ import { UserDto } from '../../models/user.models';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatTableModule
+    MatTableModule,
+    MatSelectModule
   ],
   templateUrl: './waiters.component.html',
   styleUrl: './waiters.component.css'
@@ -23,7 +25,7 @@ export class WaitersComponent implements OnInit {
    @ViewChild(FormGroupDirective) formDirective!: FormGroupDirective;
 
   waiters: UserDto[] = [];
-  displayedColumns = ['name', 'email', 'status', 'actions'];
+  displayedColumns = ['name', 'email', 'role','status', 'actions'];
   errorMessage = '';
   registerError = '';
   form: FormGroup;
@@ -40,7 +42,8 @@ export class WaitersComponent implements OnInit {
           Validators.pattern(/^[A-Za-z0-9_.-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/)
         ]
       ],
-      pin: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]]
+      pin: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]],
+      role:['Waiter']
     });
   }
 
@@ -67,8 +70,8 @@ export class WaitersComponent implements OnInit {
 
     this.waiterService.registerWaiter(this.form.getRawValue()).subscribe({
       next: () => {
-        this.toastr.success('Waiter registered.');
-        this.formDirective.resetForm();
+        this.toastr.success('Staff member registered.');
+        this.formDirective.resetForm({role: 'Waiter'});
         this.loadWaiters();
       },
       error: (err) => {
@@ -93,8 +96,10 @@ startEdit(waiter: UserDto): void {
     firstName: waiter.firstName,
     lastName: waiter.lastName,
     email: waiter.email,
-    pin: ''
+    pin: '',
+    role: waiter.role
   });
+  this.form.controls['role'].disable();
   this.form.markAsUntouched();
   this.setPinRequired(false);
 
@@ -104,7 +109,8 @@ startEdit(waiter: UserDto): void {
 cancelEdit(): void {
   this.editingWaiter = null;
   this.registerError = '';
-  this.formDirective.resetForm();
+  this.formDirective.resetForm({role:'Waiter'});
+  this.form.controls['role'].enable();
   this.setPinRequired(true);
 }
 
@@ -127,7 +133,7 @@ private saveChanges(waiter: UserDto): void {
 
   this.waiterService.updateWaiter(waiter.id, { firstName, lastName, email, pin: pin || null }).subscribe({
     next: () => {
-      this.toastr.success('Waiter updated.');
+      this.toastr.success('Staff member updated.');
       this.cancelEdit();
       this.loadWaiters();
     },

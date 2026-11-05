@@ -9,6 +9,7 @@ export interface OrderItemDto {
   unitPrice: number;
   lineTotal: number;
   note: string | null;
+  status: 'New' | 'Preparing' | 'Ready';
 }
 
 export interface OrderDto {

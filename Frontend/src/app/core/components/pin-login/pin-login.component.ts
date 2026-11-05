@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { Role } from '../../models/auth.models';
 
 @Component({
   selector: 'app-pin-login',
@@ -44,11 +45,22 @@ form: FormGroup;
     this.errorMessage = '';
 
     this.authService.loginWithPin(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/dashboard/tables']),
-      error: (err) => {
+      next: (response) => this.router.navigate([this.homeFor(response.role)]),      error: (err) => {
       this.errorMessage = err.error?.message ??
        (err.status === 429 ? 'Too many requests. Please wait a minute and try again.' : 'Login failed. Please try again.');
       }
     });
+
+  }
+
+    private homeFor(role: Role): string {
+    switch (role) {
+      case 'Kitchen':
+        return '/dashboard/kitchen';
+      case 'Courier':
+        return '/dashboard/courier';
+      default:
+        return '/dashboard/tables';
+    }
   }
 }

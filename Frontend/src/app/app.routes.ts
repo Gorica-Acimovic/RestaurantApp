@@ -18,6 +18,11 @@ import { MyReservationsComponent } from './core/components/my-reservations/my-re
 import { ReviewsComponent } from './core/components/reviews/reviews.component';
 import { StatisticsComponent } from './core/components/statistics/statistics.component';
 import { ProfileComponent } from './core/components/profile/profile.component';
+import { CheckoutComponent } from './core/components/checkout/checkout.component';
+import { MyOrdersComponent } from './core/components/my-orders/my-orders.component';
+import { OnlineOrdersComponent } from './core/components/online-orders/online-orders.component';
+import { KitchenComponent } from './core/components/kitchen/kitchen.component';
+import { CourierComponent } from './core/components/courier/courier.component';
 
 export const routes: Routes = [
 
@@ -39,8 +44,13 @@ export const routes: Routes = [
         { path:'reservations', component: ReservationsComponent, canActivate: [roleGuard('Admin', 'Manager', 'Waiter')]},
         { path: 'orders/:tableId', component: OrderComponent, canActivate: [roleGuard('Admin', 'Manager', 'Waiter')] },
         { path: 'my-reservations', component: MyReservationsComponent, canActivate: [roleGuard('Guest')] },
+        { path: 'checkout', component: CheckoutComponent, canActivate: [roleGuard('Guest')] },
+        { path: 'my-orders', component: MyOrdersComponent, canActivate: [roleGuard('Guest')] },
+        { path: 'online-orders', component: OnlineOrdersComponent, canActivate: [roleGuard('Manager')] },
+        { path: 'kitchen', component: KitchenComponent, canActivate: [roleGuard('Kitchen', 'Manager')] },
         { path: 'reviews', component: ReviewsComponent, canActivate: [roleGuard('Manager')] },
         { path: 'statistics', component: StatisticsComponent, canActivate: [roleGuard('Admin', 'Manager')] },
+                { path: 'courier', component: CourierComponent, canActivate: [roleGuard('Courier')] },
         { path: 'profile', component: ProfileComponent },
      ]
     }

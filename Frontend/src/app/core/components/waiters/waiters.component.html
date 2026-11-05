@@ -1,7 +1,7 @@
-<h2 class="page-title">Waiters</h2>
+<h2 class="page-title">Staff</h2>
 
 <div class="panel">
-  <h3>{{ editingWaiter ? 'Edit waiter' : 'Register new waiter' }}</h3>
+  <h3>{{ editingWaiter ? 'Edit staff member' : 'Register new staff member' }}</h3>
 
 <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="form-row">
@@ -41,6 +41,17 @@
       </mat-form-field>
     </div>
 
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="role">
+          <mat-option value="Waiter">Waiter</mat-option>
+          <mat-option value="Kitchen">Kitchen</mat-option>
+          <mat-option value="Courier">Courier</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
    <div class="form-buttons">
   <button type="submit" class="button primary">{{ editingWaiter ? 'Save changes' : 'Register' }}</button>
 
@@ -69,6 +80,11 @@
     <ng-container matColumnDef="email">
       <th mat-header-cell *matHeaderCellDef>Email</th>
       <td mat-cell *matCellDef="let waiter">{{ waiter.email }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef>Role</th>
+      <td mat-cell *matCellDef="let waiter">{{ waiter.role }}</td>
     </ng-container>
 
     <ng-container matColumnDef="status">

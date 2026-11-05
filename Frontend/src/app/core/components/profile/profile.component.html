@@ -92,9 +92,9 @@
     }
 
     <mat-form-field appearance="outline" class="credential-field">
-      <mat-label>{{ isWaiter ? 'Your PIN' : 'Your password' }}</mat-label>
-      <input matInput type="password" [formControl]="credentialControl" [attr.maxlength]="isWaiter ? 4 : null" />
-      <mat-error>{{ isWaiter ? 'PIN is required.' : 'Password is required.' }}</mat-error>
+      <mat-label>{{ usesPin ? 'Your PIN' : 'Your password' }}</mat-label>
+      <input matInput type="password" [formControl]="credentialControl" [attr.maxlength]="usesPin ? 4 : null" />
+      <mat-error>{{ usesPin ? 'PIN is required.' : 'Password is required.' }}</mat-error>
     </mat-form-field>
 
     @if (deactivateError) {

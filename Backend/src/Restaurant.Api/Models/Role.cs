@@ -5,6 +5,8 @@
         Guest,
         Waiter,
         Manager,
-        Admin
+        Admin,
+        Courier,
+        Kitchen
     }
 }

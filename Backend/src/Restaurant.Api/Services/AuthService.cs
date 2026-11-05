@@ -32,7 +32,7 @@ namespace Restaurant.Api.Services
 
             if (user is null
                 || !user.IsActive
-                || user.Role == Role.Waiter
+                || StaffRoles.WithPin.Contains(user.Role)
                 || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 _logger.LogWarning("Failed login for {Email}", request.Email);
@@ -139,6 +139,8 @@ namespace Restaurant.Api.Services
                 Role = user.Role.ToString()
             };
         }
+
+
         public async Task<(LoginResponse? Response, string? Error, int StatusCode)> PinLoginAsync(PinLoginRequest pinLoginRequest, string clientKey)
         {
             var maxFailed = int.Parse(_config["PinProtection:MaxFailedAttempts"]!);
@@ -165,7 +167,7 @@ namespace Restaurant.Api.Services
             }
 
             var pinHash = _pinHasher.HashPin(pinLoginRequest.Pin);
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.PinHash == pinHash && u.IsActive && u.Role == Role.Waiter);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.PinHash == pinHash && u.IsActive && StaffRoles.WithPin.Contains(u.Role));
 
             attempt.LastAttemptAt = now;
             attempt.BlockedUntil = null;
@@ -202,7 +204,7 @@ namespace Restaurant.Api.Services
             await _db.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            _logger.LogInformation("Waiter {UserId} logged in with PIN from {ClientKey}", user.Id, clientKey);
+            _logger.LogInformation("User {UserId} ({Role}) logged in with PIN from {ClientKey}", user.Id, user.Role, clientKey);
             return (await CreateLoginResponseAsync(user), null, 200);
 
         }

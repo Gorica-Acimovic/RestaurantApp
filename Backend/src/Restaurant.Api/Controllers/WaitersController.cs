@@ -24,6 +24,9 @@ namespace Restaurant.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> RegisterWaiter(RegisterWaiterRequest request)
         {
+            if (!StaffRoles.WithPin.Contains(request.Role))
+                return Error(400, "Invalid role. Only 'Waiter', 'Kitchen' or 'Courier' roles are allowed.");
+
             var managerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
             var (waiter, error) = await _userService.RegisterWaiterAsync(request, managerId);

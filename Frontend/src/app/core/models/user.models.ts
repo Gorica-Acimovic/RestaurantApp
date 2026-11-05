@@ -14,6 +14,7 @@ export interface RegisterWaiterRequest{
     lastName: string;
     email: string;
     pin: string;
+    role:Role;
 }
 
 export interface ChangePasswordRequest {

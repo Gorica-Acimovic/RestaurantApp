@@ -68,7 +68,7 @@ namespace Restaurant.Api.Services
                 return (null, "Table already has an open order.", 409);
             }
 
-            await _hub.Clients.All.SendAsync("TablesChanged");
+            await _hub.Clients.Groups("managers", "waiters").SendAsync("TablesChanged");
             _logger.LogInformation("Order {OrderId} opened on table {TableId} by waiter {WaiterId}, {Guests} guest(s)", 
                 order.Id, table.Id, waiterId, request.NumberOfGuests);
 
@@ -80,7 +80,7 @@ namespace Restaurant.Api.Services
             await using var transaction = await _context.Database.BeginTransactionAsync();
             await LockOrderAsync(orderId);
 
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.Channel == OrderChannel.DineIn);
             if (order == null)
             {
                 return (null, "Order not found.", 404);
@@ -108,12 +108,13 @@ namespace Restaurant.Api.Services
                 MenuItemId = menuItem.Id,
                 Quantity = request.Quantity,
                 UnitPrice = menuItem.Price,
-                Note = CleanNote(request.Note)
+                Note = CleanNote(request.Note),
+                CreatedAt = _timeProvider.GetLocalNow().DateTime
             });
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
-            await NotifyOrderChangedAsync(order.TableId);
+            await NotifyOrderChangedAsync(order.TableId!.Value);
 
             return (await LoadOrderDtoAsync(order.Id), null, 200);
         }
@@ -133,9 +134,15 @@ namespace Restaurant.Api.Services
                 $"SELECT Id FROM Orders WITH (UPDLOCK, ROWLOCK) WHERE Id = {orderId}");
         }
 
-        private Task NotifyOrderChangedAsync(int tableId)
+        private async Task NotifyOrderChangedAsync(int tableId)
         {
-            return _hub.Clients.Group($"table-{tableId}").SendAsync("OrderChanged");
+            await _hub.Clients.Group($"table-{tableId}").SendAsync("OrderChanged");
+            await NotifyKitchenAsync();
+        }
+
+        private Task NotifyKitchenAsync()
+        {
+            return _hub.Clients.Group("kitchen").SendAsync("KitchenChanged");
         }
 
         private static string? CleanNote(string? note)
@@ -165,16 +172,17 @@ namespace Restaurant.Api.Services
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice,
                     LineTotal = i.Quantity * i.UnitPrice,
-                    Note = i.Note
+                    Note = i.Note,
+                    Status = i.Status.ToString()
                 })
                 .ToList();
 
             return new OrderDto
             {
                 Id = order.Id,
-                TableId = order.TableId,
-                TableNumber = order.Table.Number,
-                WaiterName = $"{order.Waiter.FirstName} {order.Waiter.LastName}",
+                TableId = order.TableId!.Value,
+                TableNumber = order.Table!.Number,
+                WaiterName = $"{order.Waiter!.FirstName} {order.Waiter.LastName}",
                 OpenedAt = order.OpenedAt,
                 ClosedAt = order.ClosedAt,
                 Status = order.Status.ToString(),
@@ -188,7 +196,7 @@ namespace Restaurant.Api.Services
             await using var transaction = await _context.Database.BeginTransactionAsync();
             await LockOrderAsync(orderId);
 
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.Channel == OrderChannel.DineIn);
             if (order == null)
             {
                 return (null, "Order not found.", 404);
@@ -205,12 +213,17 @@ namespace Restaurant.Api.Services
                 return (null, "Order item not found.", 404);
             }
 
+            if (item.Status != OrderItemStatus.New)
+            {
+                return (null, "The kitchen has already started this item.", 409);
+            }
+
             item.Quantity = request.Quantity;
             item.Note = CleanNote(request.Note);
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
-            await NotifyOrderChangedAsync(order.TableId);
+            await NotifyOrderChangedAsync(order.TableId!.Value);
 
             return (await LoadOrderDtoAsync(order.Id), null, 200);
         }
@@ -219,7 +232,7 @@ namespace Restaurant.Api.Services
             await using var transaction = await _context.Database.BeginTransactionAsync();
             await LockOrderAsync(orderId);
 
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.Channel == OrderChannel.DineIn);
             if (order == null)
             {
                 return (null, "Order not found.", 404);
@@ -235,12 +248,15 @@ namespace Restaurant.Api.Services
             {
                 return (null, "Order item not found.", 404);
             }
-
+            if (item.Status != OrderItemStatus.New)
+            {
+                return (null, "The kitchen has already started this item.", 409);
+            }
             _context.OrderItems.Remove(item);
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
-            await NotifyOrderChangedAsync(order.TableId);
+            await NotifyOrderChangedAsync(order.TableId!.Value);
 
             return (await LoadOrderDtoAsync(order.Id), null, 200);
         }
@@ -255,7 +271,7 @@ namespace Restaurant.Api.Services
             .Include(o => o.Table)
             .Include(o => o.Waiter)
             .Include(o => o.Items).ThenInclude(i => i.MenuItem)
-            .FirstOrDefaultAsync(o => o.Id == orderId);
+            .FirstOrDefaultAsync(o => o.Id == orderId && o.Channel == OrderChannel.DineIn);
 
         if (order == null)
         {
@@ -285,7 +301,7 @@ namespace Restaurant.Api.Services
         _context.Invoices.Add(invoice);
         order.Status = OrderStatus.Closed;
         order.ClosedAt = now;
-        order.Table.Status = TableStatus.Available;
+        order.Table!.Status = TableStatus.Available;
 
         try
         {
@@ -299,7 +315,8 @@ namespace Restaurant.Api.Services
         }
 
         await transaction.CommitAsync();
-        await _hub.Clients.All.SendAsync("TablesChanged");
+            await _hub.Clients.Groups("managers", "waiters").SendAsync("TablesChanged");
+            await NotifyKitchenAsync();
 
             _logger.LogInformation("Order {OrderId} closed, invoice {InvoiceNumber}, total {Total}" +
                 "payment {Paymentmethod}", order.Id, invoice.InvoiceNumber, invoice.TotalAmount, invoice.PaymentMethod);
@@ -314,7 +331,7 @@ namespace Restaurant.Api.Services
 
         var order = await _context.Orders
             .Include(o => o.Table)
-            .FirstOrDefaultAsync(o => o.Id == orderId);
+            .FirstOrDefaultAsync(o => o.Id == orderId && o.Channel == OrderChannel.DineIn);
 
         if (order == null)
         {
@@ -328,13 +345,14 @@ namespace Restaurant.Api.Services
 
         order.Status = OrderStatus.Cancelled;
         order.ClosedAt = _timeProvider.GetLocalNow().DateTime;
-        order.Table.Status = TableStatus.Available;
+        order.Table!.Status = TableStatus.Available;
 
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
-        await _hub.Clients.All.SendAsync("TablesChanged");
+        await _hub.Clients.Groups("managers","waiters").SendAsync("TablesChanged");
+        await NotifyKitchenAsync();
 
-        _logger.LogInformation("Order {OrderId} cancelled on table {TableId}", order.Id, order.TableId);
+            _logger.LogInformation("Order {OrderId} cancelled on table {TableId}", order.Id, order.TableId);
 
         return (null, 200);
     }
@@ -345,7 +363,7 @@ namespace Restaurant.Api.Services
                 .Include(i => i.Order).ThenInclude(o => o.Table)
                 .Include(i => i.Order).ThenInclude(o => o.Waiter)
                 .Include(i => i.Order).ThenInclude(o => o.Items).ThenInclude(it => it.MenuItem)
-                .FirstOrDefaultAsync(i => i.OrderId == orderId);
+                .FirstOrDefaultAsync(i => i.OrderId == orderId && i.Order.Channel == OrderChannel.DineIn);
 
             return invoice == null ? null : ToInvoiceDto(invoice.Order, invoice);
         }
@@ -359,7 +377,7 @@ namespace Restaurant.Api.Services
             InvoiceNumber = invoice.InvoiceNumber,
             InvoiceNumberText = $"INV-{invoice.InvoiceNumber:D6}",
             OrderId = order.Id,
-            TableNumber = order.Table.Number,
+            TableNumber = order.Table!.Number,
             WaiterName = orderDto.WaiterName,
             IssuedAt = invoice.IssuedAt,
             PaymentMethod = invoice.PaymentMethod.ToString(),

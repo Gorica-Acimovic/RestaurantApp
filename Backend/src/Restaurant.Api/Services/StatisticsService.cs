@@ -40,7 +40,9 @@ namespace Restaurant.Api.Services
             var reservationCount = await reservations.CountAsync();
             var noShowCount = await reservations.CountAsync( r => r.Status == ReservationStatus.NoShow );
 
-            var closedOrders = _context.Orders.Where( o => o.Status == OrderStatus.Closed && o.ClosedAt >= start && o.ClosedAt < end );
+            var closedOrders = _context.Orders.Where( o => o.Status == OrderStatus.Closed &&
+            o.Channel == OrderChannel.DineIn && o.ClosedAt >= start && o.ClosedAt < end );
+
             var orderCount = await closedOrders.CountAsync();
 
             var guestCount = await closedOrders.SumAsync(o => (int?)o.NumberOfGuests) ?? 0;
@@ -213,7 +215,7 @@ namespace Restaurant.Api.Services
                 .ToList();
 
             var hours = await _context.Orders
-                .Where(o => o.Status == OrderStatus.Closed && o.ClosedAt >= startTime && o.ClosedAt < endTime)
+                .Where(o => o.Status == OrderStatus.Closed && o.Channel ==OrderChannel.DineIn && o.ClosedAt >= startTime && o.ClosedAt < endTime)
                 .GroupBy(o => o.OpenedAt.Hour)
                 .Select(g => new HourStatDto { Hour = g.Key, OrderCount = g.Count() })
                 .OrderBy(h => h.Hour)

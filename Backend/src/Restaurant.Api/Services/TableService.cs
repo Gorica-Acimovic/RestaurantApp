@@ -44,7 +44,7 @@ namespace Restaurant.Api.Services
 
             _context.RestaurantTables.Add(table);
             await _context.SaveChangesAsync();
-            await _hub.Clients.All.SendAsync("TablesChanged");
+            await _hub.Clients.Groups("managers", "waiters").SendAsync("TablesChanged");
 
             var tableDto = new TableDto
             {
@@ -94,7 +94,7 @@ namespace Restaurant.Api.Services
             table.IsActive = false;
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
-            await _hub.Clients.All.SendAsync("TablesChanged");
+            await _hub.Clients.Groups("managers", "waiters").SendAsync("TablesChanged");
             return (true, null);
         }
 
@@ -134,7 +134,7 @@ namespace Restaurant.Api.Services
             table.PositionX = request.PositionX;
             table.PositionY = request.PositionY;
             await _context.SaveChangesAsync();
-            await _hub.Clients.All.SendAsync("TablesChanged");
+            await _hub.Clients.Groups("managers", "waiters").SendAsync("TablesChanged");
             return true;
         }
 
@@ -157,7 +157,7 @@ namespace Restaurant.Api.Services
 
             table.Status = request.Status;
             await _context.SaveChangesAsync();
-            await _hub.Clients.All.SendAsync("TablesChanged");
+            await _hub.Clients.Groups("managers", "waiters").SendAsync("TablesChanged");
             return (true, null);
         }
 
@@ -180,7 +180,7 @@ namespace Restaurant.Api.Services
             table.PositionX = request.PositionX;
             table.PositionY = request.PositionY;
             await _context.SaveChangesAsync();
-            await _hub.Clients.All.SendAsync("TablesChanged");
+            await _hub.Clients.Groups("managers", "waiters").SendAsync("TablesChanged");
             return (true, null);
 
         }

@@ -1,4 +1,4 @@
-export type Role = 'Guest' | 'Waiter' | 'Manager' | 'Admin';
+export type Role = 'Guest' | 'Waiter' | 'Manager' | 'Admin' | 'Kitchen' | 'Courier';
 
 export interface LoginRequest {
   email: string;

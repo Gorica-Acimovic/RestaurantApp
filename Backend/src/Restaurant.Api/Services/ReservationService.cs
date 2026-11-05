@@ -157,7 +157,8 @@ namespace Restaurant.Api.Services
                 _logger.LogWarning("Reservation {ReservationId} not confirmed, unique index blocked a duplicate on the table", reservation.Id);
                 return (null, "The table is already reserved for that time.", 409);
             }
-            await _hub.Clients.All.SendAsync("ReservationsChanged");
+            await _hub.Clients.Groups("managers", "waiters").SendAsync("ReservationsChanged");
+
             _logger.LogInformation("Reservation {ReservationId} changed from {From} to {To} by user {UserId}, table {TableId}", reservation.Id, current, next, userId, reservation.TableId);
 
             var dto = new ReservationDto
@@ -230,6 +231,7 @@ namespace Restaurant.Api.Services
                     if (taken)
                     {
                         _logger.LogWarning("Reservation rejected, table {TableId} is already reserved for {StartsAt}", table.Id, startTime);
+
                         return (null, "The table is already reserved for that time.", true);
                     }
 
@@ -251,7 +253,7 @@ namespace Restaurant.Api.Services
                 _context.Reservations.Add(reservation);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-                await _hub.Clients.All.SendAsync("ReservationsChanged");
+                await _hub.Clients.Groups("managers", "waiters").SendAsync("ReservationsChanged");
 
                 _logger.LogInformation("Reservation {ReservationId} created for {StartsAt}, {Guests} guest(s), table {TableId}, user {UserId}", 
                     reservation.Id, startTime, request.NumberOfGuests, table?.Id, userId);
@@ -277,6 +279,7 @@ namespace Restaurant.Api.Services
             catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
             {
                 _logger.LogWarning("Reservation rejected, unique index blocked a duplicate for {StartsAt}", startTime);
+
                 return (null, "No free table for that time.", true);
             }
         }
@@ -349,7 +352,8 @@ namespace Restaurant.Api.Services
             if (noShows + cancelled > 0)
             {
                 _logger.LogInformation("Closed expired reservations: {NoShows} no-show, {Cancelled} cancelled", noShows, cancelled);
-                await _hub.Clients.All.SendAsync("ReservationsChanged");
+
+                await _hub.Clients.Groups("managers", "waiters").SendAsync("ReservationsChanged");
             }
 
             return (noShows, cancelled);

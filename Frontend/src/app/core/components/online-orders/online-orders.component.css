@@ -1,0 +1,80 @@
+.empty,
+.info {
+  color: var(--muted);
+}
+
+.info {
+  margin: 4px 0;
+}
+
+.orders {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.order-card {
+  margin-bottom: 0;
+}
+
+.order-card.new-order {
+  border-color: var(--accent);
+}
+
+.order-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.order-head h3 {
+  margin: 0;
+}
+
+.badge {
+  padding: 2px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.badge-Received {
+  border-color: #ffb300;
+  color: #ffb300;
+}
+
+.badge-Confirmed,
+.badge-Preparing {
+  color: var(--accent);
+}
+
+.badge-Ready,
+.badge-OutForDelivery {
+  color: #6fbf73;
+}
+
+.note {
+  margin: 8px 0;
+  color: var(--text);
+}
+
+.items {
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.items li {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.items .total {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}

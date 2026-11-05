@@ -1,0 +1,79 @@
+.page-actions {
+  margin-bottom: 24px;
+}
+
+.empty,
+.info {
+  color: var(--muted);
+}
+
+.info {
+  margin: 4px 0;
+}
+
+.order-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.order-head h3 {
+  margin: 0;
+}
+
+.placed {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.cancelled {
+  color: var(--muted);
+}
+
+.stepper {
+  display: flex;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.stepper li {
+  flex: 1;
+  padding-top: 8px;
+  border-top: 3px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.stepper li.done {
+  border-top-color: var(--accent);
+}
+
+.stepper li.current {
+  border-top-color: var(--accent);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.items {
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.items li {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.items .total {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 1.1rem;
+}

@@ -46,7 +46,7 @@ export class OrderComponent implements OnInit, OnDestroy {
   form: FormGroup;
   addForm: FormGroup;
   paymentControl = new FormControl<PaymentMethod>('Cash', { nonNullable: true });
-  displayedColumns = ['name', 'quantity', 'unitPrice', 'lineTotal', 'note', 'actions'];
+  displayedColumns = ['name', 'quantity', 'unitPrice', 'lineTotal', 'note', 'status', 'actions'];
   readonly currency = CURRENCY;
 
   private refreshSubscription: Subscription | null = null;

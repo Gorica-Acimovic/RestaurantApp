@@ -134,3 +134,16 @@
     border-bottom: 1px solid #999;
   }
 }
+
+.item-status {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.item-status-Preparing {
+  color: var(--accent);
+}
+
+.item-status-Ready {
+  color: #6fbf73;
+}

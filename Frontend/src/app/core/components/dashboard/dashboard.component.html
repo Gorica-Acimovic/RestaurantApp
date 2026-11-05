@@ -7,8 +7,9 @@
     }
 
     @if (session?.role === 'Manager') {
-      <a routerLink="/dashboard/waiters" routerLinkActive="active">Waiters</a>
+      <a routerLink="/dashboard/waiters" routerLinkActive="active">Staff</a>
       <a routerLink="/dashboard/menu" routerLinkActive="active">Menu</a>
+      <a routerLink="/dashboard/online-orders" routerLinkActive="active">Online orders</a>
       <a routerLink="/dashboard/reviews" routerLinkActive="active">Reviews</a>
     }
 
@@ -16,13 +17,24 @@
       <a routerLink="/dashboard/statistics" routerLinkActive="active">Statistics</a>
     }
 
-    @if (session?.role !== 'Guest') {
+     @if (session?.role === 'Courier') {
+      <a routerLink="/dashboard/courier" routerLinkActive="active">Deliveries</a>
+    }
+
+    @if (session?.role === 'Kitchen' || session?.role === 'Manager') {
+      <a routerLink="/dashboard/kitchen" routerLinkActive="active">Kitchen</a>
+    }
+
+
+    @if (session?.role === 'Admin' || session?.role === 'Manager' || session?.role === 'Waiter') {
       <a routerLink="/dashboard/tables" routerLinkActive="active">Hall</a>
       <a routerLink="/dashboard/reservations" routerLinkActive="active">Reservations</a>
     }
 
     @if (session?.role === 'Guest') {
       <a routerLink="/dashboard/my-reservations" routerLinkActive="active">My reservations</a>
+      <a routerLink="/dashboard/my-orders" routerLinkActive="active">My orders</a>
+      <a routerLink="/dashboard/checkout" routerLinkActive="active">Cart ({{ cartService.count}})</a>
     }
     <a routerLink="/dashboard/profile" routerLinkActive="active">Profile</a>
     <span class="user">{{ session?.firstName }} {{ session?.lastName }} ({{ session?.role }})</span>

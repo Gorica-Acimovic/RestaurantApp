@@ -11,6 +11,9 @@ export class RealtimeService {
   readonly tablesChanged$ = new Subject<void>();
   readonly reservationsChanged$ = new Subject<void>();
   readonly reconnected$ = new Subject<void>();
+  readonly onlineOrdersChanged$ = new Subject<void>();
+  readonly kitchenChanged$ = new Subject<void>(); 
+  readonly orderReady$ = new Subject<number>(); 
 
   private connection : HubConnection | null = null;
   private startFailed = false;
@@ -26,16 +29,20 @@ export class RealtimeService {
     }
     this.startFailed = false;
 
-    this.connection= new HubConnectionBuilder()
+    this.connection = new HubConnectionBuilder()
           .withUrl(HUB_URL, {accessTokenFactory: () => this.authService.getAccessToken() ?? '' })
             .withAutomaticReconnect({
               nextRetryDelayInMilliseconds:() => 5000
           })
           .build();
 
-            this.connection.on('TablesChanged', () => this.tablesChanged$.next());
+    this.connection.on('TablesChanged', () => this.tablesChanged$.next());
     this.connection.on('ReservationsChanged', () => this.reservationsChanged$.next());
     this.connection.on('OrderChanged', () => this.orderChanged$.next());
+    this.connection.on('OnlineOrdersChanged', () => this.onlineOrdersChanged$.next());
+    this.connection.on('KitchenChanged', () => this.kitchenChanged$.next());
+    this.connection.on('OrderReady', (tableNumber:number) => this.orderReady$.next(tableNumber));
+
     this.connection.onreconnected(() => {
       this.rejoinTables();
       this.reconnected$.next();

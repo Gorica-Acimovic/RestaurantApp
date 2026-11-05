@@ -60,9 +60,11 @@ builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOnlineOrderService, OnlineOrderService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IForecastService, ForecastService>();
+builder.Services.AddScoped<IKitchenService, KitchenService>();
 
 builder.Services.AddHostedService<DailyStatisticsWorker>();
 builder.Services.AddHostedService<ReservationLifecycleWorker>();
@@ -71,7 +73,9 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.Configure<ReservationOptions>(builder.Configuration.GetSection("Reservations"));
+builder.Services.Configure<OnlineOrderOptions>(builder.Configuration.GetSection("OnlineOrders"));
 builder.Services.AddSingleton(TimeProvider.System);
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

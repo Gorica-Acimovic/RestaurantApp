@@ -1,0 +1,57 @@
+<h2 class="page-title">My orders</h2>
+
+<div class="row-actions page-actions">
+  <a class="button primary" routerLink="/menu">Order food</a>
+  <button type="button" class="button outline" (click)="loadOrders()">Refresh</button>
+</div>
+
+@if (errorMessage) {
+  <p class="form-error">{{ errorMessage }}</p>
+}
+
+@if (loaded && orders.length === 0 && !errorMessage) {
+  <p class="empty">You have not placed any orders yet.</p>
+}
+
+@for (order of orders; track order.id) {
+  <div class="panel order-card">
+    <div class="order-head">
+      <h3>Order #{{ order.id }} · {{ order.channel === 'Delivery' ? 'Delivery' : 'Pickup' }}</h3>
+      <span class="placed">{{ order.placedAt | date: 'dd.MM.yyyy HH:mm' }}</span>
+    </div>
+
+    @if (order.status === 'Cancelled') {
+      <p class="cancelled">Cancelled</p>
+    } @else {
+      <ol class="stepper">
+        @for (step of steps(order); track step) {
+          <li [class]="stepClass(order, step)">{{ labels[step] }}</li>
+        }
+      </ol>
+    }
+
+    @if (order.courierName) {
+      <p class="info">Courier: {{ order.courierName }}</p>
+    }
+    @if (order.channel === 'Delivery') {
+      <p class="info">Address: {{ order.address }}</p>
+    }
+
+    <ul class="items">
+      @for (item of order.items; track item.id) {
+        <li>
+          <span>{{ item.quantity }} × {{ item.menuItemName }}</span>
+          <span>{{ item.lineTotal | number: '1.2-2' }} {{ currency }}</span>
+        </li>
+      }
+      @if (order.deliveryFee > 0) {
+        <li><span>Delivery fee</span><span>{{ order.deliveryFee | number: '1.2-2' }} {{ currency }}</span></li>
+      }
+      <li class="total"><span>Total ({{ order.paymentMethod }})</span><span>{{ order.total | number: '1.2-2' }} {{ currency }}</span></li>
+    </ul>
+
+    @if (order.status === 'Received') {
+      <button type="button" class="button danger small" (click)="cancelOrder(order)">Cancel order</button>
+    }
+  </div>
+}

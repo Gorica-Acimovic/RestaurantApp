@@ -1,0 +1,72 @@
+.empty {
+  color: var(--muted);
+}
+
+.tickets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.ticket {
+  margin-bottom: 0;
+}
+
+.ticket.late {
+  border-color: var(--error);
+}
+
+.ticket-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ticket-head h3 {
+  margin: 0;
+}
+
+.waiting {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.ticket.late .waiting {
+  color: var(--error);
+}
+
+.note {
+  margin: 8px 0;
+}
+
+.items {
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.items li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.items li.done {
+  opacity: 0.45;
+}
+
+.item-note {
+  display: block;
+  color: var(--muted);
+}
+
+.ready-label {
+  color: #6fbf73;
+  font-size: 0.85rem;
+}

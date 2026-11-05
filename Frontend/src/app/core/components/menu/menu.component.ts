@@ -10,6 +10,8 @@ import { DecimalPipe } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { debounceTime } from 'rxjs';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-menu',
@@ -36,7 +38,17 @@ export class MenuComponent  implements OnInit {
   categoryControl = new FormControl('', { nonNullable: true });
 
 
-  constructor(private menuService: MenuService, private formBuilder: FormBuilder, private toastr: ToastrService  ) { }
+  constructor(private menuService: MenuService, private formBuilder: FormBuilder, private toastr: ToastrService, public cartService: CartService, private authService: AuthService  ) { }
+
+  get canOrder(): boolean {
+  const role = this.authService.getRole();
+  return role === null || role === 'Guest';
+}
+
+addToCart(item: MenuItemDto): void {
+  this.cartService.add(item);
+  this.toastr.success(`${item.name} added to cart.`);
+}
 
    ngOnInit(): void {
     this.loadItems();
