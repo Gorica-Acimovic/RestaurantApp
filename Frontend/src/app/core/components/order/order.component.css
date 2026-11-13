@@ -109,7 +109,7 @@
 }
 
 @media print {
-  .no-print,
+  .no-print,     
   .order-header button {
     display: none;
   }

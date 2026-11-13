@@ -7,15 +7,15 @@ namespace Restaurant.Api.Hubs
     [Authorize(Roles = "Admin,Manager,Waiter, Guest, Kitchen, Courier")]
     public class RestaurantHub : Hub
     {
-        public override async Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()           
         {
-            var role = Context.User?.FindFirstValue(ClaimTypes.Role);
+           
+            var role = Context.User?.FindFirstValue(ClaimTypes.Role);   
 
-            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier); 
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{userId}");
-
-
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{userId}"); 
+            
             if (role is "Admin" or "Manager")
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, "managers");
@@ -33,7 +33,7 @@ namespace Restaurant.Api.Hubs
                 await Groups.AddToGroupAsync(Context.ConnectionId, "couriers");
             }
 
-            await base.OnConnectedAsync();
+            await base.OnConnectedAsync(); 
         }
 
         [Authorize(Roles = "Admin,Manager,Waiter")]

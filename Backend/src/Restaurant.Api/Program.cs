@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Restaurant.Api.Data;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,10 +21,9 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, services, configuration) => configuration
-    .ReadFrom.Configuration(context.Configuration)
-    .ReadFrom.Services(services)
+    .ReadFrom.Configuration(context.Configuration) 
+    .ReadFrom.Services(services) 
     .Enrich.FromLogContext());
-
 
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
@@ -117,13 +116,13 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
     options.AddPolicy("pin-login", httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
+        RateLimitPartition.GetFixedWindowLimiter(                                      
             httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0
+                PermitLimit = 10,   
+                Window = TimeSpan.FromMinutes(1), 
+                QueueLimit = 0 
             }));
 });
 
@@ -200,7 +199,6 @@ using (var scope = app.Services.CreateScope())
     await DbInitializer.SeedAsync(dbContext, app.Configuration);
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -215,3 +213,5 @@ app.MapControllers();
 app.MapHub<RestaurantHub>("/hubs/restaurant");
 
 app.Run();
+
+public partial class Program { }

@@ -50,7 +50,7 @@ export const routes: Routes = [
         { path: 'kitchen', component: KitchenComponent, canActivate: [roleGuard('Kitchen', 'Manager')] },
         { path: 'reviews', component: ReviewsComponent, canActivate: [roleGuard('Manager')] },
         { path: 'statistics', component: StatisticsComponent, canActivate: [roleGuard('Admin', 'Manager')] },
-                { path: 'courier', component: CourierComponent, canActivate: [roleGuard('Courier')] },
+        { path: 'courier', component: CourierComponent, canActivate: [roleGuard('Courier')] },
         { path: 'profile', component: ProfileComponent },
      ]
     }

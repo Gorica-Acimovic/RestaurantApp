@@ -85,8 +85,8 @@ namespace Restaurant.Api.Services
 
             if (next == ReservationStatus.Confirmed)
             {
-                var tableId = request.TableId ?? reservation.TableId;                                                             
-                                                                     
+                var tableId = request.TableId ?? reservation.TableId;                                                              
+                                                                    
                 if (tableId == null)
                 {
                     return (null, "Choose a table before confirming the reservation.", 400);
@@ -208,8 +208,8 @@ namespace Restaurant.Api.Services
                 }
 
             }
-
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+                       
+            await using var transaction = await _context.Database.BeginTransactionAsync();  
 
             try
             {
@@ -234,8 +234,6 @@ namespace Restaurant.Api.Services
 
                         return (null, "The table is already reserved for that time.", true);
                     }
-
-
                 }
 
                 var reservation = new Reservation
@@ -281,6 +279,7 @@ namespace Restaurant.Api.Services
                 _logger.LogWarning("Reservation rejected, unique index blocked a duplicate for {StartsAt}", startTime);
 
                 return (null, "No free table for that time.", true);
+
             }
         }
 
@@ -293,11 +292,11 @@ namespace Restaurant.Api.Services
                 var from = date.Value.Date;
                 var to = from.AddDays(1);
                 query = query.Where(r => r.StartsAt >= from && r.StartsAt < to);
+             }
 
-            }
             return await query
                 .OrderBy(r => r.StartsAt)
-                .Select(r => new ReservationDto
+                .Select(r => new ReservationDto 
                 {
                     Id = r.Id,
                     CustomerName = r.CustomerName,
@@ -310,9 +309,8 @@ namespace Restaurant.Api.Services
                     TableId = r.TableId,
                     TableNumber = r.Table != null ? r.Table.Number : null,
                     RowVersion = Convert.ToBase64String(r.RowVersion)
-
+                  
                 }).ToListAsync();
-
         }
 
         public async Task<List<ReservationDto>> GetMyReservationsAsync(int userId)
@@ -432,7 +430,7 @@ namespace Restaurant.Api.Services
             var takenTableIds = await _context.Reservations
                     .Where(r => r.Id != id && r.TableId != null
                     && (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Confirmed)
-                    && r.StartsAt < reservation.EndsAt && r.EndsAt > reservation.StartsAt)
+                    && r.StartsAt < reservation.EndsAt && r.EndsAt > reservation.StartsAt) 
                     .Select(r => r.TableId!.Value)
                     .ToListAsync();
 

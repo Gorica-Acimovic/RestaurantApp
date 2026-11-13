@@ -52,6 +52,7 @@ namespace Restaurant.Api.Services
                          || o.Delivery!.Status == DeliveryStatus.Confirmed
                          || o.Delivery!.Status == DeliveryStatus.Preparing)
                      && o.Items.Any(i => i.Status != OrderItemStatus.Ready))
+                 .Include(o => o.Table)
                  .Include(o => o.Delivery)
                  .Include(o => o.Items).ThenInclude(i => i.MenuItem)
                  .ToListAsync();
@@ -63,7 +64,7 @@ namespace Restaurant.Api.Services
                     Channel = o.Channel.ToString(),
                     Title = o.Channel == OrderChannel.DineIn ? $"Table {o.Table!.Number}" : $"{o.Channel} #{o.Id}",
                     Note = o.Delivery?.Note,
-                    Since = o.Items.Where(i => i.Status != OrderItemStatus.Ready).Min(i => i.CreatedAt),
+                    Since = o.Items.Where(i => i.Status != OrderItemStatus.Ready).Min(i => i.CreatedAt), 
                     Items = o.Items
                         .OrderBy(i => i.Id)
                         .Select(i => new KitchenItemDto
@@ -76,7 +77,7 @@ namespace Restaurant.Api.Services
                         })
                         .ToList()
 
-                }).OrderBy(t => t.Since)
+                }).OrderBy(t => t.Since) 
                 .ToList();
 
         }

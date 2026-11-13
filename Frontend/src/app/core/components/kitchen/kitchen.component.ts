@@ -30,7 +30,7 @@ constructor(
  ngOnInit(): void {
    this.loadTickets();
 
-   this.refreshSubscription = merge ( 
+   this.refreshSubscription = merge (
     this.realtimeService.kitchenChanged$,
     this.realtimeService.reconnected$,
     interval(30000)
@@ -54,8 +54,7 @@ constructor(
           this.now = Date.now();
           this.loaded = true;
         },
-        error: () => (this.errorMessage = 'Failed to load tickets. Please try again later.')
-        
+        error: () => (this.errorMessage = 'Failed to load tickets. Please try again later.')        
       });
 
   }

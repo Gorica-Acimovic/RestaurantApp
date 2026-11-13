@@ -4,6 +4,13 @@ using Restaurant.Api.DTOs;
 using Restaurant.Api.Interfaces;
 using Restaurant.Api.Models;
 using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
+using System.IO.Pipelines;
+using System.Xml.Linq;
+using System.ComponentModel;
+using System;
+using Microsoft.ML.Runtime;
+using System.Runtime.ConstrainedExecution;
 
 namespace Restaurant.Api.Services
 {
@@ -72,7 +79,7 @@ namespace Restaurant.Api.Services
 
         public async Task LogoutAsync(string refreshToken)
         {
-            var stored = await _db.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken);
+            var stored = await _db.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken);  
             if (stored is not null)
             {
                 stored.IsRevoked = true;
@@ -148,7 +155,7 @@ namespace Restaurant.Api.Services
 
             await EnsureAttemptRowAsync(clientKey);
 
-            await using var transaction = await _db.Database.BeginTransactionAsync();
+            await using var transaction = await _db.Database.BeginTransactionAsync();       
             await _db.Database.ExecuteSqlInterpolatedAsync(
                 $"SELECT Id FROM PinLoginAttempts WITH (UPDLOCK, ROWLOCK) WHERE ClientKey = {clientKey}"
                 );
@@ -163,7 +170,7 @@ namespace Restaurant.Api.Services
                 _logger.LogWarning("PIN login rejected for {ClientKey}, still blocked", clientKey);
 
                 return (null, $"Too many failed attempts. Try again in {minutesLeft} minute(s).", 429);
-            
+
             }
 
             var pinHash = _pinHasher.HashPin(pinLoginRequest.Pin);
@@ -211,28 +218,26 @@ namespace Restaurant.Api.Services
 
         private async Task EnsureAttemptRowAsync(string clientKey)
         {
-            var exists = await _db.PinLoginAttempts.AnyAsync(a => a.ClientKey == clientKey);
+            var exists = await _db.PinLoginAttempts.AnyAsync(a => a.ClientKey == clientKey); 
             if (exists)
             {
                 return;
             }
 
-            _db.PinLoginAttempts.Add(new PinLoginAttempt
+            _db.PinLoginAttempts.Add(new PinLoginAttempt                                
             {
                 ClientKey = clientKey,
                 LastAttemptAt = _timeProvider.GetUtcNow().UtcDateTime
             });
 
-            try
+            try                                                                                                                
             {
-                await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync();                                                                                       
             }
             catch(DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627})
             {
                 _db.ChangeTracker.Clear();
             }
-       
-            
-        } 
+        }
     }
 }

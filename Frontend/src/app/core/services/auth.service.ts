@@ -27,14 +27,15 @@ export class AuthService {
   return this.http.post<LoginResponse>(`${API_URL}/auth/pin-login`, request)
     .pipe(tap((response) => this.saveSession(response)));
 }
-  logout(): void {
-    const session = this.getSession();
+
+logout(): void {
+    const session = this.getSession(); 
     if (session) {
       this.http
         .post(`${API_URL}/auth/logout`, { refreshToken: session.refreshToken })
         .subscribe();
     }
-    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    sessionStorage.removeItem(SESSION_STORAGE_KEY); 
   }
 
   getSession(): LoginResponse | null {
@@ -66,4 +67,5 @@ export class AuthService {
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(response));
   }
 
+  
 }

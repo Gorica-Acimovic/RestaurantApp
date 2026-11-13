@@ -27,32 +27,31 @@ import { RealtimeService } from '../../services/realtime.service';
 export class ReservationsComponent implements OnInit,OnDestroy{
 
  reservations: ReservationDto[] = [];
-  displayedColumns = ['time', 'customer', 'guests', 'table', 'status', 'actions'];
+  displayedColumns = ['time', 'customer', 'guests', 'table', 'status', 'actions']; 
   loaded = false;
-  errorMessage = '';
+  errorMessage = ''; 
 
 
-  confirming: ReservationDto | null = null;
-  availableTables : AvailableTableDto[] = [];
-  chosenTableId: number | null = null;
-  confirmError ='';
+  confirming: ReservationDto | null = null; 
+  availableTables : AvailableTableDto[] = []; 
+  chosenTableId: number | null = null;  
+  confirmError =''; 
 
-  readonly mapWidth = 160;
+  readonly mapWidth = 160; 
   readonly mapHeight = 100;
   readonly xScale = 1.6;
 
-  dateControl = new FormControl(this.today(), { nonNullable: true });
-  private refreshSubscription: Subscription | null = null;
+  dateControl = new FormControl(this.today(), { nonNullable: true }); 
+  private refreshSubscription: Subscription | null = null;  
 
-  constructor(private reservationService: ReservationService, private toastr: ToastrService, private realtimeService: RealtimeService) { }
+  constructor(private reservationService: ReservationService, private toastr: ToastrService, private realtimeService: RealtimeService) { } 
 
   
 
-   ngOnInit(): void {
-     this.loadReservations();
-    this.dateControl.valueChanges.subscribe(() => this.loadReservations());
-
-       this.refreshSubscription = merge(
+   ngOnInit(): void {               
+      this.loadReservations();          
+      this.dateControl.valueChanges.subscribe(() => this.loadReservations());  
+      this.refreshSubscription = merge(
       this.realtimeService.reservationsChanged$,
       this.realtimeService.reconnected$
     ).subscribe(() => {
@@ -99,17 +98,17 @@ export class ReservationsComponent implements OnInit,OnDestroy{
   }
 
   startConfirm(reservation: ReservationDto): void {
-  this.confirming = reservation;
-  this.chosenTableId = reservation.tableId;
+  this.confirming = reservation; 
+  this.chosenTableId = reservation.tableId; 
   this.confirmError = '';
   this.availableTables = [];
 
   this.loadAvailability(reservation);
 
-  if (reservation.tableId === null) {
+  if (reservation.tableId === null) {  
     this.reservationService.getSuggestedTable(reservation.id).subscribe({
-      next: (table) => (this.chosenTableId = table.id),
-      error: () => (this.chosenTableId = null)
+      next: (table) => (this.chosenTableId = table.id), 
+      error: () => (this.chosenTableId = null)      
     });
   }
 }
@@ -118,12 +117,13 @@ private loadAvailability(reservation: ReservationDto): void {
   this.reservationService.getAvailableTables(reservation.startsAt, reservation.numberOfGuests).subscribe({
     next: (tables) => (this.availableTables = tables),
     error: (err) => (this.confirmError = err.error?.message ?? 'Could not load tables.')
-  });
+  }); 
 }
 
 isSelectable(table: AvailableTableDto): boolean {
   return table.isAvailable || table.id === this.confirming?.tableId;
 }
+
 
 chooseTable(table: AvailableTableDto): void {
   if (this.isSelectable(table)) {
@@ -132,7 +132,7 @@ chooseTable(table: AvailableTableDto): void {
 }
 
 closeConfirm(): void {
-  this.confirming = null;
+  this.confirming = null; 
 }
 
 confirmReservation(): void {
@@ -181,4 +181,5 @@ confirmReservation(): void {
 canMarkNoShow(reservation: ReservationDto): boolean {
   return new Date(reservation.startsAt).getTime() <= Date.now();
 }
+
 }
